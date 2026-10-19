@@ -35,7 +35,8 @@ import type {
   Variable,
   VariableCollection,
   VariableType,
-  VariableValue
+  VariableValue,
+  VariableLiteral
 } from './types'
 import * as Variables from './variables'
 import type { VariableModeFallback } from './variables'
@@ -216,7 +217,7 @@ export class SceneGraph {
     variableId: string,
     modeId?: string,
     visited?: Set<string>
-  ): VariableValue | undefined {
+  ): VariableLiteral | undefined {
     return Variables.resolveVariable(this, variableId, modeId, visited)
   }
 
@@ -248,7 +249,7 @@ export class SceneGraph {
     nodeId: string,
     variableId: string,
     fallback?: VariableModeFallback
-  ): VariableValue | undefined {
+  ): VariableLiteral | undefined {
     return Variables.resolveVariableForNode(this, nodeId, variableId, fallback)
   }
 

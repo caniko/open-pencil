@@ -1176,6 +1176,7 @@ export const FIGMA_RAW_NODE_FIELD_KEYS = [
   'letterSpacing',
   'textTracking',
   'fontVersion',
+  'emojiImageSet',
   'textUserLayoutVersion',
   'textExplicitLayoutVersion',
   'fontVariations',

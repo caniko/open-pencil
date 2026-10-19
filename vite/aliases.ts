@@ -33,6 +33,7 @@ export function createOpenPencilAliases(rootDir: string, options: { cloud?: bool
     { find: '#vue', replacement: resolve(rootDir, 'packages/vue/src') },
     { find: '#core', replacement: resolve(rootDir, 'packages/core/src') },
     { find: '#dom-css', replacement: resolve(rootDir, 'packages/dom-css/src') },
+    { find: '#scene-graph', replacement: resolve(rootDir, 'packages/scene-graph/src') },
     {
       find: /^@open-pencil\/dom-css\/browser$/,
       replacement: resolve(rootDir, 'packages/dom-css/src/browser.ts')

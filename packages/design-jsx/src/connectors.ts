@@ -14,6 +14,7 @@ import {
   createConnector,
   freeEndpoint
 } from '@open-pencil/scene-graph/connectors'
+import { isGeneratedFrame } from '@open-pencil/scene-graph/generated'
 import type { Color, Vector } from '@open-pencil/scene-graph/primitives'
 
 import { CONNECTOR_LINE, CONNECTOR_SIDE, STROKE_CAP } from './enums'
@@ -93,8 +94,8 @@ function styleLine(graph: SceneGraph, line: SceneNode, props: TreeNode['props'])
 }
 
 /**
- * The layers JSX writes under `rootIds`, in order, each before its descendants: a connector's
- * generated line and label are not, so an end never names them.
+ * The layers JSX writes under `rootIds`, in order, each before its descendants: the layers a
+ * connector or sticky note generates are not, so an end never names them.
  */
 function layersUnder(graph: SceneGraph, rootIds: readonly string[]): SceneNode[] {
   const layers: SceneNode[] = []
@@ -102,7 +103,7 @@ function layersUnder(graph: SceneGraph, rootIds: readonly string[]): SceneNode[]
     const node = graph.getNode(id)
     if (!node) return
     layers.push(node)
-    if (node.type !== 'CONNECTOR') for (const childId of node.childIds) visit(childId)
+    if (!isGeneratedFrame(node)) for (const childId of node.childIds) visit(childId)
   }
   for (const id of rootIds) visit(id)
   return layers
