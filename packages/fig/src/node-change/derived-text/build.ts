@@ -31,6 +31,8 @@ export interface ShapedTextGlyph {
   firstCharacter?: number
   /** Horizontal advance in pixels. */
   advance: number
+  /** The emoji the glyph stands for, when it is one: its outline is then the placeholder square. */
+  emojiCodePoints?: number[]
 }
 
 /** Text laid out at the node's width, as the renderer draws it. */
@@ -109,7 +111,8 @@ function shapedGlyphRecords(
     fontSize: glyph.fontSize,
     firstCharacter: glyph.firstCharacter,
     advance: glyph.fontSize > 0 ? glyph.advance / glyph.fontSize : 0,
-    rotation: 0
+    rotation: 0,
+    ...emojiGlyphFields(glyph)
   }))
 }
 

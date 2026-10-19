@@ -38,6 +38,8 @@ export interface TokenModeValue {
   result?: string
   /** A CSS expression written instead of the stored number, such as `clamp(…)`. */
   expression?: string
+  /** A function from the file OpenPencil cannot evaluate, such as `TERNARY`. */
+  unsupported?: string
 }
 
 export interface TokenRow {
@@ -96,6 +98,7 @@ function modeValue(
 ): TokenModeValue {
   const expression = variable.expressions?.[modeId]?.css
   if (typeof value === 'object' && 'expression' in value) {
+    if (value.expression === 'UNSUPPORTED') return { modeId, css: '', unsupported: value.function }
     if (value.expression === 'COMPOSE_COLOR')
       return colorExpressionMode(graph, variable, modeId, value)
     const resolved = graph.resolveVariable(variable.id, modeId)

@@ -15,6 +15,7 @@ import { weightToStyle } from '@open-pencil/scene-graph/font-style'
 import { resolveNodeTextDirection } from '@open-pencil/scene-graph/text/direction'
 
 import { resolveParagraphFontFamilies } from '#core/canvas/text/font-families'
+import { laidOutText } from '#core/canvas/text/keycap'
 import {
   pushParagraphStyle,
   type ParagraphPaintStyle,
@@ -117,7 +118,8 @@ function blockHeightBehavior(
   return ck.TextHeightBehavior.All
 }
 
-function styleRunColor(
+/** The colour a style run's text is drawn in: its first visible solid fill, or `baseColor`. */
+export function styleRunColor(
   ck: CanvasKit,
   style: SceneNode['styleRuns'][number]['style'],
   baseColor: Float32Array
@@ -182,7 +184,7 @@ function addParagraphText(
   start: number,
   end: number
 ): void {
-  builder.addText(shownTextSlice(node, start, end))
+  builder.addText(laidOutText(shownTextSlice(node, start, end)))
 }
 
 function addStyledRuns(

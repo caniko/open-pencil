@@ -174,7 +174,10 @@ export interface Fill {
   gradientTransform?: GradientTransform
   imageHash?: string
   imageScaleMode?: ImageScaleMode
+  /** A crop's image-space window; Fill, Fit and Tile ignore it. */
   imageTransform?: GradientTransform
+  /** Clockwise turn of a Fill, Fit or Tile image, in multiples of 90°; a crop holds its own. */
+  imageRotation?: number
   sourceNodeId?: string
   scale?: number
   spacing?: number
@@ -420,8 +423,11 @@ export interface PluginRelaunchDataEntry {
 export interface TextPathData {
   network: VectorNetwork
   normalizedSize: Vector
+  /** Where on the start segment the text starts, from 0 at its start to 1 at its end. */
   tValue: number
   forward: boolean
+  /** The segment the text starts on, which Figma marks in the network blob; 0 when unmarked. */
+  startSegment?: number
 }
 
 export interface DerivedTextGlyph {
@@ -866,11 +872,26 @@ export interface VariableFormula {
   type: 'FLOAT' | 'BOOLEAN'
   value: VariableFormulaNode
 }
+/**
+ * An imported expression OpenPencil cannot evaluate, kept as the file wrote it so saving writes it
+ * back. `references` holds one entry per alias in `value`, in the order the format walks them, and
+ * `null` where the alias names a variable this document does not have. `modes` holds the mode id of
+ * each mode key in `value`, in the same walk order.
+ */
+export interface VariableUnsupportedExpression {
+  expression: 'UNSUPPORTED'
+  /** The function name the file gives, such as `TERNARY`. */
+  function: string
+  value: Record<string, unknown>
+  references: (string | null)[]
+  modes: string[]
+}
 export type VariableValue =
   | VariableLiteral
   | VariableAlias
   | VariableColorExpression
   | VariableFormula
+  | VariableUnsupportedExpression
 export type VariableModeMap = Record<string, string>
 
 /** Property pickers a variable is offered in, as Figma names them. */
