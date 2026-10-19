@@ -1,6 +1,6 @@
-import { tinykeys } from 'tinykeys'
+import { useEventListener } from '@vueuse/core'
+import { createKeybindingsHandler } from 'tinykeys'
 import type { KeyBindingMap } from 'tinykeys'
-import { onScopeDispose } from 'vue'
 
 import { editorCommandMetadata, type EditorCommandId } from '@open-pencil/vue/editor/commands'
 
@@ -15,6 +15,7 @@ import { TOOL_SHORTCUTS } from '@/app/editor/session'
 import { openSettingsDialog } from '@/app/settings/dialog'
 import { setSnappingPreference } from '@/app/settings/preferences/apply'
 import { isButtonActivation, isEditing } from '@/app/shell/keyboard/focus'
+import { shortcutEvent } from '@/app/shell/keyboard/layout'
 import { bindSpaceHandTool } from '@/app/shell/keyboard/space-tool'
 import type {
   KeyboardShortcutOptions,
@@ -356,8 +357,7 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
     })
   }
 
-  const unsubscribeEditor = tinykeys(
-    window,
+  const editorHandler = createKeybindingsHandler(
     Object.fromEntries(
       Object.entries(bindings).map(([keys, handler]) => [
         keys,
@@ -367,14 +367,14 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
           handler(event)
         }
       ])
-    ),
-    { capture: true }
+    )
   )
+  const globalHandler = createKeybindingsHandler(globalBindings)
 
-  const unsubscribeGlobal = tinykeys(window, globalBindings, { capture: true })
-
-  onScopeDispose(() => {
-    unsubscribeEditor()
-    unsubscribeGlobal()
+  useEventListener(window, 'keydown', (event) => editorHandler(shortcutEvent(event)), {
+    capture: true
+  })
+  useEventListener(window, 'keydown', (event) => globalHandler(shortcutEvent(event)), {
+    capture: true
   })
 }

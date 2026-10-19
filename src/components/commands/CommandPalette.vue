@@ -10,6 +10,7 @@ import { useCommandMessages, useCommonMessages } from '@open-pencil/vue/i18n'
 import { CommandPaletteRoot } from '@open-pencil/vue/primitives/CommandPalette'
 
 import { usePagePaletteGroup } from '@/app/editor/pages/palette'
+import { shortcutCode } from '@/app/shell/keyboard/layout'
 import { useAppMenu } from '@/app/shell/menu/app-menu'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import AppDialogRoot from '@/components/ui/dialog/AppDialogRoot.vue'
@@ -44,7 +45,8 @@ if (IS_BROWSER) {
     const hasPlatformModifier = isMac
       ? event.metaKey && !event.ctrlKey
       : event.ctrlKey && !event.metaKey
-    if (!hasPlatformModifier || event.altKey || event.shiftKey || event.code !== 'KeyK') return
+    if (!hasPlatformModifier || event.altKey || event.shiftKey || shortcutCode(event) !== 'KeyK')
+      return
     event.preventDefault()
     open.value = true
   })
