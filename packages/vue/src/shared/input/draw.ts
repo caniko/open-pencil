@@ -1,5 +1,5 @@
+import type { Editor } from '@open-pencil/core'
 import { DEFAULT_TEXT_HEIGHT, DEFAULT_TEXT_WIDTH } from '@open-pencil/core/constants'
-import type { Editor } from '@open-pencil/core/editor'
 import type { NodeType, SceneNode } from '@open-pencil/scene-graph'
 import { getWorldMatrix } from '@open-pencil/scene-graph/coordinate'
 import Matrix from '@open-pencil/scene-graph/matrix'

@@ -11,7 +11,8 @@ import {
 } from 'reka-ui'
 import { computed, onMounted, ref, shallowRef, watch } from 'vue'
 
-import { cycleSafeParent, type SceneNode } from '@open-pencil/scene-graph'
+import type { SceneNode } from '@open-pencil/scene-graph'
+import { cycleSafeParent } from '@open-pencil/scene-graph/instances'
 import { createDefaultNode } from '@open-pencil/scene-graph/node-defaults'
 import { useI18n } from '@open-pencil/vue'
 

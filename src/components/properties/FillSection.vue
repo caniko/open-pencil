@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { shaderOfPaint, type Fill, type SceneNode } from '@open-pencil/scene-graph'
+import type { Fill, SceneNode } from '@open-pencil/scene-graph'
 import { colorToHexRaw } from '@open-pencil/scene-graph/color'
 import type { Color } from '@open-pencil/scene-graph/primitives'
+import { shaderOfPaint } from '@open-pencil/scene-graph/shaders'
 import {
   BindableValueRoot,
   useColorBindingProvider,
   useFillControls,
   useI18n,
-  useOkHCL
+  useOkHCL,
+  type BindableValueActions
 } from '@open-pencil/vue'
-import type { BindableValueActions } from '@open-pencil/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import FillPicker from '@/components/fill-picker/FillPicker.vue'

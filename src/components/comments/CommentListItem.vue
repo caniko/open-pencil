@@ -2,7 +2,8 @@
 import { uniqBy } from 'es-toolkit'
 import { computed } from 'vue'
 
-import { liveReplies, type CommentThread } from '@open-pencil/scene-graph'
+import type { CommentThread } from '@open-pencil/scene-graph'
+import { liveReplies } from '@open-pencil/scene-graph/comments'
 import { useCommentMessages } from '@open-pencil/vue'
 
 import { commentPreview } from '@/app/comments/format'

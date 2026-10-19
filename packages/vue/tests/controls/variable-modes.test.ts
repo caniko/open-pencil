@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { collectionsBoundIn, SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import { createEditor } from '@open-pencil/core'
+import { SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import { collectionsBoundIn } from '@open-pencil/scene-graph/variables'
 import { MIXED, setVariableMode, variableModeChoices } from '@open-pencil/vue'
 
 const RED = { r: 1, g: 0, b: 0, a: 1 }

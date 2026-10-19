@@ -2,7 +2,7 @@
 import { omit } from 'es-toolkit'
 import { ref, type ComponentPublicInstance } from 'vue'
 
-import type { VariantMutationResult } from '@open-pencil/core/editor'
+import type { VariantMutationResult } from '@open-pencil/core'
 import { useFlatReorderDrag, useI18n } from '@open-pencil/vue'
 
 import IconButton from '@/components/ui/button/IconButton.vue'

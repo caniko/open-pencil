@@ -1,7 +1,6 @@
 import { fromUint8Array, isValid, toUint8Array } from 'js-base64'
 
 import type {
-  GroupFitOptions,
   SceneGraph,
   SceneNode as CoreSceneNode,
   NodeType,
@@ -12,6 +11,7 @@ import type {
 } from '@open-pencil/scene-graph'
 import { copyFills } from '@open-pencil/scene-graph/copy'
 import { computeBounds } from '@open-pencil/scene-graph/geometry'
+import type { GroupFitOptions } from '@open-pencil/scene-graph/group-bounds'
 import { computeImageHash } from '@open-pencil/scene-graph/images'
 import type { Rect, Vector } from '@open-pencil/scene-graph/primitives'
 
@@ -84,8 +84,6 @@ export type {
   FigmaVectorNode
 } from './node-types'
 export type { FigmaFont, FigmaFontName } from './proxy'
-
-export { computeImageHash }
 
 // TODO(figma-api): Implement the full official PluginAPI interface once our compatibility
 // layer covers all required node-specific return types and unsupported APIs are modeled explicitly.
@@ -475,7 +473,7 @@ export class FigmaAPI implements NodeProxyHost {
     const vector = this._renderer
       ? this._flattenWithRenderer(sourceNodes, parentId)
       : this._flattenPlaceholder(sourceNodes, parentId)
-    if (index != null) this.graph.reorderChild(vector.id, parentId, index)
+    if (index != null) this.graph.insertChildAt(vector.id, parentId, index)
     for (const node of nodes) {
       this.graph.deleteNode(this._nodeId(node))
     }

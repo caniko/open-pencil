@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import type { Color, Fill } from '@open-pencil/scene-graph'
+import type { Fill } from '@open-pencil/scene-graph'
+import type { Color } from '@open-pencil/scene-graph/primitives'
 import { useI18n, useVariableModes } from '@open-pencil/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'

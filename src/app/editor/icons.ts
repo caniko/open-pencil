@@ -23,7 +23,9 @@ import IconStickyNote from '~icons/lucide/sticky-note'
 import IconTriangle from '~icons/lucide/triangle'
 import IconType from '~icons/lucide/type'
 
-import { readIcon, slotPropertyId, type SceneNode } from '@open-pencil/scene-graph'
+import type { SceneNode } from '@open-pencil/scene-graph'
+import { readIcon } from '@open-pencil/scene-graph/icons'
+import { slotPropertyId } from '@open-pencil/scene-graph/slots'
 
 import type { Tool } from '@/app/editor/session'
 

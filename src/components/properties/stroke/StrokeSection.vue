@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
-import type { Color, Fill, SceneNode, Stroke } from '@open-pencil/scene-graph'
+import type { Fill, SceneNode, Stroke } from '@open-pencil/scene-graph'
 import { colorToHexRaw } from '@open-pencil/scene-graph/color'
+import type { Color } from '@open-pencil/scene-graph/primitives'
 import {
   applySolidStrokeColor,
   applyStrokePaint,
@@ -12,9 +13,9 @@ import {
   useI18n,
   useNodeProps,
   useOkHCL,
-  useStrokeControls
+  useStrokeControls,
+  type BindableValueActions
 } from '@open-pencil/vue'
-import type { BindableValueActions } from '@open-pencil/vue'
 
 import FillPicker from '@/components/fill-picker/FillPicker.vue'
 import NumberField from '@/components/inputs/NumberField.vue'

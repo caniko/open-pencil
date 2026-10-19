@@ -1,24 +1,24 @@
 import { partition } from 'es-toolkit/array'
 import { omit, omitBy } from 'es-toolkit/object'
 
-import { BLACK } from './constants'
-import type { SceneGraph } from './index'
-import { setInstanceOverride } from './instance-overrides'
-import { findInstanceAncestor } from './instances'
-import type { Color } from './primitives'
+import { BLACK } from '../constants'
+import type { SceneGraph } from '../graph'
+import { findInstanceAncestor } from '../instances'
+import { setInstanceOverride } from '../instances/overrides'
+import type { Color } from '../primitives'
 import type {
   Variable,
   VariableCollection,
   VariableCollectionMode,
   VariableType,
   VariableValue
-} from './types'
+} from '../types'
 import {
   isNumericVariableBindingField,
   variableBindingOwner,
   assignVariableBindingUnits
-} from './variables/bindings'
-import { BOOLEAN_BINDING_FIELDS, STRING_BINDING_FIELDS } from './variables/fields'
+} from './bindings'
+import { BOOLEAN_BINDING_FIELDS, STRING_BINDING_FIELDS } from './fields'
 
 export function addVariable(graph: SceneGraph, variable: Variable): void {
   graph.variables.set(variable.id, variable)
@@ -446,3 +446,6 @@ function markBoundVariablesOverrideOnInstance(
       node.boundVariables[field] ?? null
     )
 }
+
+export * from './bindings'
+export * from './token'

@@ -1,6 +1,6 @@
-import type { Editor, Tool } from '@open-pencil/core/editor'
-import { transformVectorNetwork } from '@open-pencil/scene-graph'
+import type { Editor, Tool } from '@open-pencil/core'
 import { getWorldMatrix } from '@open-pencil/scene-graph/coordinate'
+import { transformVectorNetwork } from '@open-pencil/scene-graph/vector-network'
 
 import {
   createResumedPenState,

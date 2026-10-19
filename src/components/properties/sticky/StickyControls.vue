@@ -2,8 +2,8 @@
 import { tv } from 'tailwind-variants'
 import { computed } from 'vue'
 
-import { STICKY_COLORS, type StickyTextSize } from '@open-pencil/scene-graph'
 import { colorToHex } from '@open-pencil/scene-graph/color'
+import { STICKY_COLORS, type StickyTextSize } from '@open-pencil/scene-graph/generated'
 import type { Color } from '@open-pencil/scene-graph/primitives'
 import { useI18n } from '@open-pencil/vue'
 

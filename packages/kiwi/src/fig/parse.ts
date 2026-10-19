@@ -6,8 +6,6 @@ import type { FigmaMessage, NodeChange } from './codec'
 import { extractFigPageManifest, type FigPageManifestEntry } from './page-manifest'
 import { isZstdCompressed } from './protocol'
 
-export type { NodeChange } from './codec'
-
 /**
  * Deduplicates pluginData/pluginRelaunchData entries on raw NodeChange objects.
  * Some .fig files have millions of identical entries where only a small

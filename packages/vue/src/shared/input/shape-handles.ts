@@ -1,4 +1,4 @@
-import type { Editor, ShapeHandleHover } from '@open-pencil/core/editor'
+import type { Editor, ShapeHandleHover } from '@open-pencil/core'
 import {
   cornerRadiusAtPoint,
   cornerRadiusChanges,
@@ -11,7 +11,8 @@ import {
   starRatioAtPoint,
   type ShapeHandleKind
 } from '@open-pencil/core/geometry'
-import type { SceneNode, Vector } from '@open-pencil/scene-graph'
+import type { SceneNode } from '@open-pencil/scene-graph'
+import type { Vector } from '@open-pencil/scene-graph/primitives'
 
 import { editorMessages } from '#vue/i18n/messages/editor'
 import { isPastPointerDragThreshold } from '#vue/shared/input/drag-threshold'

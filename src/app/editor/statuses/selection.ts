@@ -1,11 +1,11 @@
 import { computed } from 'vue'
 
+import type { SceneNode } from '@open-pencil/scene-graph'
 import {
   STATUS_NODE_TYPES,
   statusPlacement,
-  type SceneNode,
   type StatusState
-} from '@open-pencil/scene-graph'
+} from '@open-pencil/scene-graph/statuses'
 import { useSceneComputed } from '@open-pencil/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'

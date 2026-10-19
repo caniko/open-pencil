@@ -1,14 +1,14 @@
-import type { Editor } from '@open-pencil/core/editor'
+import type { Editor } from '@open-pencil/core'
 import { computeAccurateBounds, regenerateFillGeometry } from '@open-pencil/core/vector'
-import {
-  cloneVectorNetwork,
-  slotScope,
-  transformVectorNetwork,
-  vectorNetworksEqual,
-  type VectorNetwork
-} from '@open-pencil/scene-graph'
+import type { VectorNetwork } from '@open-pencil/scene-graph'
 import { getNodeLocalMatrix, getWorldMatrix } from '@open-pencil/scene-graph/coordinate'
 import Matrix from '@open-pencil/scene-graph/matrix'
+import { slotScope } from '@open-pencil/scene-graph/slots'
+import {
+  cloneVectorNetwork,
+  transformVectorNetwork,
+  vectorNetworksEqual
+} from '@open-pencil/scene-graph/vector-network'
 
 import { getLiveNetwork } from './network'
 import type { VectorEditState } from './types'

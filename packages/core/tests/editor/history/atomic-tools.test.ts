@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createEditor, executeAtomicTool } from '@open-pencil/core/editor'
+import { createEditor, executeAtomicTool } from '@open-pencil/core'
 import { FigmaAPI } from '@open-pencil/core/figma-api'
 import { ALL_TOOLS, type ToolDef } from '@open-pencil/core/tools'
 import { SceneGraph } from '@open-pencil/scene-graph'

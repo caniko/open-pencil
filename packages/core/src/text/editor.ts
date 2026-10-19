@@ -2,7 +2,7 @@ import type { CanvasKit } from 'canvaskit-wasm'
 
 import type { SceneNode } from '@open-pencil/scene-graph'
 import type { Rect } from '@open-pencil/scene-graph/primitives'
-import { resolveNodeTextDirection } from '@open-pencil/scene-graph/text-direction'
+import { resolveNodeTextDirection } from '@open-pencil/scene-graph/text/direction'
 
 import type { SkiaRenderer } from '#core/canvas'
 import type { TextLayout } from '#core/canvas/text/layout'

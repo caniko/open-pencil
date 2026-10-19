@@ -29,15 +29,8 @@ Eine typische Oberfläche:
 
 ```vue
 <script setup lang="ts">
-import { createEditor } from '@open-pencil/core/editor'
-import {
-  provideEditor,
-  CanvasRoot,
-  CanvasSurface,
-  ToolbarRoot,
-  PageListRoot,
-  LayerTreeRoot,
-} from '@open-pencil/vue'
+import { createEditor } from '@open-pencil/core'
+import { provideEditor, CanvasRoot, CanvasSurface, ToolbarRoot, PageListRoot, LayerTreeRoot } from '@open-pencil/vue'
 
 const editor = createEditor({ width: 1440, height: 900 })
 provideEditor(editor)

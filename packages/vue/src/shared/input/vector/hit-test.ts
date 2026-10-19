@@ -1,4 +1,4 @@
-import type { Editor } from '@open-pencil/core/editor'
+import type { Editor } from '@open-pencil/core'
 import { vectorHandleParts } from '@open-pencil/core/vector'
 import type { VectorSegment, VectorVertex } from '@open-pencil/scene-graph'
 

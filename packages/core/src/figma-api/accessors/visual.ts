@@ -1,13 +1,8 @@
-import {
-  newStrokeGeometry,
-  type Color,
-  type Fill,
-  type GradientStop,
-  type SceneNode,
-  type Stroke
-} from '@open-pencil/scene-graph'
+import type { Fill, GradientStop, SceneNode, Stroke } from '@open-pencil/scene-graph'
 import { normalizeColor } from '@open-pencil/scene-graph/color'
 import { copyFills, copyStrokes } from '@open-pencil/scene-graph/copy'
+import { newStrokeGeometry } from '@open-pencil/scene-graph/node-defaults'
+import type { Color } from '@open-pencil/scene-graph/primitives'
 
 import {
   raw,

@@ -1,5 +1,5 @@
-import type { Editor } from '@open-pencil/core/editor'
-import { layerRotates } from '@open-pencil/scene-graph'
+import type { Editor } from '@open-pencil/core'
+import { layerRotates } from '@open-pencil/scene-graph/generated'
 
 import {
   buildResizeCursor,

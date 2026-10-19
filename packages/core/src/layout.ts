@@ -11,7 +11,7 @@ import {
   type Node as YogaNode
 } from 'yoga-layout'
 
-import { resolveNodeLayoutDirection } from '@open-pencil/scene-graph/text-direction'
+import { resolveNodeLayoutDirection } from '@open-pencil/scene-graph/text/direction'
 
 import { applyYogaLayout } from './layout/apply'
 import {
@@ -34,13 +34,9 @@ export {
   setTextMeasurer,
   type TextMeasurer
 } from './layout/text-measurement'
-import {
-  isGeneratedFrame,
-  layoutSizing,
-  type LayoutSizing,
-  type SceneGraph,
-  type SceneNode
-} from '@open-pencil/scene-graph'
+import type { LayoutSizing, SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import { isGeneratedFrame } from '@open-pencil/scene-graph/generated'
+import { layoutSizing } from '@open-pencil/scene-graph/layout'
 
 import { estimateTextSize, getTextMeasurer, measureTextForLayout } from './layout/text-measurement'
 import {

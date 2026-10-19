@@ -1,9 +1,9 @@
+import type { VariableModeFallback } from '.'
 import { copyFills, copyStrokes } from '../copy'
-import type { SceneGraph } from '../index'
+import type { SceneGraph } from '../graph'
 import { hasInstanceOverride } from '../instances'
 import type { Color } from '../primitives'
 import type { Fill, SceneNode, Stroke, StyleRun, VariableValue } from '../types'
-import type { VariableModeFallback } from '../variables'
 import { NUMERIC_FIELDS, isNumericVariableBindingField } from './fields'
 export { isNumericVariableBindingField } from './fields'
 

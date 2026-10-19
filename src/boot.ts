@@ -1,7 +1,7 @@
 import { createHead } from '@unhead/vue/client'
 import { createApp, nextTick } from 'vue'
 
-import { ReadOnlyDocumentError } from '@open-pencil/core/editor'
+import { ReadOnlyDocumentError } from '@open-pencil/core'
 import { createRetainedScopePlugin } from '@open-pencil/vue'
 
 import './app.css'

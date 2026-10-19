@@ -20,7 +20,7 @@ Opening or focusing the picker does not emit a color update.
 ```vue twoslash
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { Color } from '@open-pencil/scene-graph'
+import type { Color } from '@open-pencil/scene-graph/primitives'
 import { ColorPickerRoot } from '@open-pencil/vue'
 
 const color = ref<Color>({ r: 0.2, g: 0.5, b: 0.9, a: 1 })

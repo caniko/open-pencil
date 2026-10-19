@@ -1,7 +1,8 @@
-import type { SceneGraph, SceneNode, NodeType } from './'
 import { getWorldMatrix } from './coordinate'
 import { hitsConnectorLine } from './generated/connector'
+import type { SceneGraph } from './graph'
 import Matrix from './matrix'
+import type { SceneNode, NodeType } from './types'
 
 const CONTAINER_TYPES = new Set<NodeType>([
   'CANVAS',

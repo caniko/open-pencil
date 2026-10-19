@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, reactive, watch } from 'vue'
 
-import { isNumberRange, type BehaviourKind } from '@open-pencil/scene-graph'
-import { useI18n } from '@open-pencil/vue'
-import type {
-  BehaviourBooleanControl,
-  BehaviourNumberControl,
-  BehaviourPartControl,
-  BehaviourValueControl
+import { isNumberRange, type BehaviourKind } from '@open-pencil/scene-graph/behaviours'
+import {
+  useI18n,
+  type BehaviourBooleanControl,
+  type BehaviourNumberControl,
+  type BehaviourPartControl,
+  type BehaviourValueControl
 } from '@open-pencil/vue'
 
 import NumberField from '@/components/inputs/NumberField.vue'

@@ -3,15 +3,16 @@ import { PopoverContent, PopoverPortal, PopoverRoot, PopoverTrigger } from 'reka
 import type { FocusOutsideEvent, PointerDownOutsideEvent } from 'reka-ui'
 import { tv } from 'tailwind-variants'
 
-import type { Fill, ShaderPaint, ShaderPreset } from '@open-pencil/scene-graph'
+import type { Fill } from '@open-pencil/scene-graph'
+import type { ShaderPaint, ShaderPreset } from '@open-pencil/scene-graph/shaders'
 import {
   applySolidFillColor,
   DEFAULT_SHADER_PRESET,
   FillRoot,
   useI18n,
-  useRetainedPopup
+  useRetainedPopup,
+  type OkHCLControls
 } from '@open-pencil/vue'
-import type { OkHCLControls } from '@open-pencil/vue'
 
 import ColorPickerPanel from '@/components/color-picker-panel/ColorPickerPanel.vue'
 import GradientEditor from '@/components/fill-picker/GradientEditor.vue'

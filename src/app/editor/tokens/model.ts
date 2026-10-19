@@ -8,16 +8,15 @@ import {
   variableCSSNames,
   variableUnit
 } from '@open-pencil/dom-css/export'
-import {
-  tokenNumberFromUnit,
-  tokenNumberInUnit,
-  type Color,
-  type SceneGraph,
-  type Variable,
-  type VariableCollection,
-  type VariableValue
+import type {
+  SceneGraph,
+  Variable,
+  VariableCollection,
+  VariableValue
 } from '@open-pencil/scene-graph'
 import { colorToHex } from '@open-pencil/scene-graph/color'
+import type { Color } from '@open-pencil/scene-graph/primitives'
+import { tokenNumberFromUnit, tokenNumberInUnit } from '@open-pencil/scene-graph/variables'
 import { fuzzyFilter } from '@open-pencil/vue'
 
 /** One mode's value as the stylesheet writes it, with what the panel previews beside it. */

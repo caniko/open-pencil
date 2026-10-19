@@ -24,7 +24,7 @@ The current development version requires Vue `^3.5.41` and, when supplying the o
 ```vue
 <script setup lang="ts">
 import { reactive } from 'vue'
-import { createDefaultEditorState, createEditor } from '@open-pencil/core/editor'
+import { createDefaultEditorState, createEditor } from '@open-pencil/core'
 import { SceneGraph } from '@open-pencil/scene-graph'
 import { CanvasRoot, CanvasSurface, provideEditor } from '@open-pencil/vue'
 
@@ -240,7 +240,7 @@ These are mostly useful when extending SDK primitives rather than building from 
 <script setup lang="ts">
 import { provideEditor } from '@open-pencil/vue'
 
-import type { Editor } from '@open-pencil/core/editor'
+import type { Editor } from '@open-pencil/core'
 
 const props = defineProps<{
   editor: Editor

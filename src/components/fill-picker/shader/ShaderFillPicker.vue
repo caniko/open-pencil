@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, shallowRef, type ComponentPublicInstance } from 'vue'
 
-import type { ShaderPreset } from '@open-pencil/scene-graph'
+import type { ShaderPreset } from '@open-pencil/scene-graph/shaders'
 import {
   addShaderEffect,
   canDrawShaders,

@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from 'bun:test'
 
-import { createDefaultEditorState } from '@open-pencil/core/editor'
+import { createDefaultEditorState } from '@open-pencil/core'
 
 import { createSaveActions } from '@/app/document/io/save/actions'
 import { createDocumentSourceState } from '@/app/document/io/source/state'

@@ -1,13 +1,10 @@
 import { isEqual } from 'es-toolkit/predicate'
 
-import {
-  fitEnclosingGroups,
-  FITTED_CONTAINER_TYPES,
-  claimSlotContent,
-  recordInstanceOverride,
-  slotScope
-} from '@open-pencil/scene-graph'
-import type { GroupFitOptions, SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import { fitEnclosingGroups, type GroupFitOptions } from '@open-pencil/scene-graph/group-bounds'
+import { recordInstanceOverride } from '@open-pencil/scene-graph/instances'
+import { FITTED_CONTAINER_TYPES } from '@open-pencil/scene-graph/node-defaults'
+import { claimSlotContent, slotScope } from '@open-pencil/scene-graph/slots'
 
 import { assertNodeEditable } from '#core/editor/capabilities'
 import type { NodeProxyHost } from '#core/figma-api/proxy'

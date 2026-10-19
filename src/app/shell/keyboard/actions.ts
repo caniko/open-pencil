@@ -1,7 +1,7 @@
 import type { Ref } from 'vue'
 
-import { opacityFromBuffer } from '@open-pencil/core/editor'
-import { generatedFrameText } from '@open-pencil/scene-graph'
+import { opacityFromBuffer } from '@open-pencil/core'
+import { generatedFrameText } from '@open-pencil/scene-graph/generated'
 import type { useEditorCommands, useViewportKind } from '@open-pencil/vue'
 
 import type { PropertiesTab } from '@/app/ai/chat/use'

@@ -2,20 +2,20 @@ import {
   collectionPluginDataNodeChange,
   parseGuidOrNull,
   variableAlias,
-  variableMetadataNodeChange
+  variableMetadataNodeChange,
+  safeColor
 } from '@open-pencil/fig/node-change'
-import type { GUID, NodeChange, VariableDataEntry } from '@open-pencil/kiwi/fig/codec'
+import type { GUID } from '@open-pencil/kiwi/fig'
+import type { NodeChange, VariableDataEntry } from '@open-pencil/kiwi/fig/codec'
 import { guidToString, stringToGuid } from '@open-pencil/kiwi/fig/guid'
-import {
-  modesDefaultFirst,
-  type SceneGraph,
-  type SceneNode,
-  type VariableCollectionMode,
-  type VariableValue
+import type {
+  SceneGraph,
+  SceneNode,
+  VariableCollectionMode,
+  VariableValue
 } from '@open-pencil/scene-graph'
 import { fractionalPosition, orderKeyBetween } from '@open-pencil/scene-graph/order-keys'
-
-import { safeColor } from '#core/kiwi/fig/node-change/serialize'
+import { modesDefaultFirst } from '@open-pencil/scene-graph/variables'
 
 /**
  * Identity allocation shared by the two writers. The document exporter and the clipboard

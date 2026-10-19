@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useTemplateRef, watch, type ComponentPublicInstance } from 'vue'
 
-import type { StatusWorkflowPreset } from '@open-pencil/scene-graph'
+import type { StatusWorkflowPreset } from '@open-pencil/scene-graph/statuses'
 import { useCommonMessages, useFlatReorderDrag, useStatusMessages } from '@open-pencil/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'

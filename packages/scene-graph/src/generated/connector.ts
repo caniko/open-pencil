@@ -1,6 +1,6 @@
 import { BLACK } from '../constants'
 import { getWorldMatrix } from '../coordinate'
-import type { SceneGraph } from '../index'
+import type { SceneGraph } from '../graph'
 import Matrix from '../matrix'
 import type { Color, Vector } from '../primitives'
 import type { ConnectorEndpoint, Fill, SceneNode, Stroke, VectorNetwork } from '../types'

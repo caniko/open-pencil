@@ -1,17 +1,15 @@
+import type { Fill, SceneNode } from '@open-pencil/scene-graph'
+import { colorToFill } from '@open-pencil/scene-graph/color'
+import { parseCSSGridTracks, parseCSSNumber } from '@open-pencil/scene-graph/css'
 import {
   autoLayoutSizingFields,
   fillSizingFields,
   parseAutoLayoutDirection,
   parseCounterAxisAlign,
-  parsePrimaryAxisAlign,
-  withShaderPaints,
-  type Fill,
-  type SceneNode,
-  type ShaderPaint
-} from '@open-pencil/scene-graph'
-import { colorToFill } from '@open-pencil/scene-graph/color'
-import { parseCSSGridTracks, parseCSSNumber } from '@open-pencil/scene-graph/css'
+  parsePrimaryAxisAlign
+} from '@open-pencil/scene-graph/layout'
 import type { Color, JSONObject } from '@open-pencil/scene-graph/primitives'
+import { withShaderPaints, type ShaderPaint } from '@open-pencil/scene-graph/shaders'
 
 import {
   BLEND_MODE,

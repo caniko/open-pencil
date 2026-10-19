@@ -1,14 +1,3 @@
-export type {
-  Editor,
-  EditorState,
-  EditorOptions,
-  EditorEvents,
-  EditorEventName,
-  Tool,
-  EditorToolDef
-} from '@open-pencil/core/editor'
-export { createEditor, EDITOR_TOOLS, TOOL_SHORTCUTS } from '@open-pencil/core/editor'
-
 /**
  * Public editor-context API for the Vue SDK.
  *
@@ -138,7 +127,7 @@ export type {
   UseDocumentWorkspaceOptions
 } from '#vue/document/workspace/use'
 export { useExport } from '#vue/document/export/use'
-export type { ExportFormatId, ExportFormatOption, ExportSetting } from '#vue/document/export/use'
+export type { ExportFormatOption } from '#vue/document/export/use'
 export { useFillControls } from '#vue/controls/fill/use'
 export { canDrawShaders, createShaderRasterizer } from '#vue/canvas/surface/shader/rasterizer'
 export {
@@ -223,7 +212,7 @@ export type {
   FillSwatchSlots
 } from '#vue/primitives/Fill'
 export { FontPickerRoot } from '#vue/primitives/FontPicker'
-export type { FontFamilyOption, FontPickerUI } from '#vue/primitives/FontPicker'
+export type { FontPickerUI } from '#vue/primitives/FontPicker'
 export {
   GradientEditorRoot,
   GradientEditorBar,

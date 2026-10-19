@@ -2,7 +2,7 @@
 import { compact } from 'es-toolkit'
 import { computed, ref, watch } from 'vue'
 
-import { iconNames } from '@open-pencil/scene-graph'
+import { iconNames } from '@open-pencil/scene-graph/icons'
 import { useCommonMessages, useIconSearch, usePanelMessages } from '@open-pencil/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'

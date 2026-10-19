@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises'
 
-import { shaderPresetKey } from '@open-pencil/scene-graph'
+import { shaderPresetKey } from '@open-pencil/scene-graph/shaders'
 
 import { expect, test, useEditorSetupWithClear } from '#tests/e2e/fixtures'
 import { readScenePixels } from '#tests/helpers/canvas/pixels'

@@ -1,9 +1,9 @@
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import { weightToStyle } from '@open-pencil/scene-graph/font-style'
 
 import { DEFAULT_FONT_FAMILY } from '#core/constants'
 import { shownCharacters } from '#core/text/case'
 import { cjkFallbackScriptForLanguage, type FontFallbackScript } from '#core/text/fallbacks'
-import { weightToStyle } from '#core/text/font/style'
 
 export function collectNodeFontFaces(node: SceneNode): Array<{ family: string; style: string }> {
   if (node.type !== 'TEXT') return []

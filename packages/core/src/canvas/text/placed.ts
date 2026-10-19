@@ -1,12 +1,13 @@
 import type { Paragraph } from 'canvaskit-wasm'
 
 import type { SceneNode } from '@open-pencil/scene-graph'
+import { weightToStyle } from '@open-pencil/scene-graph/font-style'
 
 import { resolveParagraphFontFamilies } from '#core/canvas/text/font-families'
 import type { TextLayout, TextLayoutMarker } from '#core/canvas/text/layout'
 import { textFontVariations } from '#core/canvas/text/paragraph'
 import { utf16IndicesByUtf8 } from '#core/canvas/text/utf8'
-import { fontManager, fontWeightMatchOrder, weightToStyle } from '#core/text/fonts'
+import { fontManager, fontWeightMatchOrder } from '#core/text/fonts'
 import { glyphOutlineSourceSync, type GlyphOutlineSource } from '#core/text/opentype'
 
 type GlyphRun = ReturnType<Paragraph['getShapedLines']>[number]['runs'][number]

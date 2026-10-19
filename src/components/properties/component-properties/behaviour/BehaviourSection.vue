@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
-import type { BehaviourKind, InteractionState } from '@open-pencil/scene-graph'
-import { useI18n } from '@open-pencil/vue'
-import type {
-  BehaviourControl,
-  BehaviourNumberControl,
-  BehaviourPartControl,
-  BehaviourValueControl
+import type { BehaviourKind, InteractionState } from '@open-pencil/scene-graph/behaviours'
+import {
+  useI18n,
+  type BehaviourControl,
+  type BehaviourNumberControl,
+  type BehaviourPartControl,
+  type BehaviourValueControl
 } from '@open-pencil/vue'
 
 import IconButton from '@/components/ui/button/IconButton.vue'

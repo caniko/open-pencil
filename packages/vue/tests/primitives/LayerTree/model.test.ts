@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph, withIcon } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@open-pencil/scene-graph'
+import { withIcon } from '@open-pencil/scene-graph/icons'
 import { buildLayerTreeModel, patchLayerNode } from '@open-pencil/vue'
 
 import { dropIndex } from '#vue/primitives/LayerTree/model'

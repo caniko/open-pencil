@@ -1,4 +1,5 @@
-import { SceneGraph, styleRunReferences } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@open-pencil/scene-graph'
+import { styleRunReferences } from '@open-pencil/scene-graph/text'
 
 import type { ExportTarget } from './types'
 

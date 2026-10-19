@@ -1,10 +1,6 @@
 import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import {
-  generateId,
-  remapStyleRunReferences,
-  SceneGraph,
-  type SceneNode
-} from '@open-pencil/scene-graph'
+import { generateId, SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import { remapStyleRunReferences } from '@open-pencil/scene-graph/text'
 
 import {
   reconcileLiveComponentEdits,

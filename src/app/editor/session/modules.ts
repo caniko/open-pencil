@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 
-import type { Editor } from '@open-pencil/core/editor'
+import type { Editor } from '@open-pencil/core'
 import type { IORegistry } from '@open-pencil/core/io'
 import { createSelectedNodeState } from '@open-pencil/vue'
 

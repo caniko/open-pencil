@@ -1,4 +1,5 @@
-import { variableText, type SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import { variableText } from '@open-pencil/scene-graph/variables'
 
 /**
  * Resolve text bound to a variable once occurrence hierarchy and modes exist; later

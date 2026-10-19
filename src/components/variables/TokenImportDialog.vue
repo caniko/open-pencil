@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
-import type { TokenImportResult } from '@open-pencil/core/editor'
 import {
+  type TokenImportResult,
   defaultTokenImportOptions,
   planTokenImport,
   type CollectionTarget,

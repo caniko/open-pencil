@@ -3,7 +3,8 @@ import { afterEach, expect, test } from 'bun:test'
 
 import { FigmaAPI } from '@open-pencil/core/figma-api'
 import { ALL_TOOLS } from '@open-pencil/core/tools'
-import { readComments, writeComments, type CommentThread } from '@open-pencil/scene-graph'
+import type { CommentThread } from '@open-pencil/scene-graph'
+import { readComments, writeComments } from '@open-pencil/scene-graph/comments'
 
 import { executeWithDocumentUndo } from '@/app/automation/execution/editor'
 import { useComments } from '@/app/comments/use'

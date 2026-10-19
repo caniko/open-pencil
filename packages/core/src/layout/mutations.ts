@@ -1,9 +1,9 @@
+import type { SceneGraph } from '@open-pencil/scene-graph'
 import {
   collectSceneMutation,
   mutationLayoutScopeIds,
-  type SceneGraph,
   type SceneMutationImpact
-} from '@open-pencil/scene-graph'
+} from '@open-pencil/scene-graph/mutation-impact'
 
 import { computeAllLayouts, computeLayout } from '#core/layout'
 

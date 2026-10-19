@@ -4,7 +4,7 @@ import { isEmptyObject, omit } from 'es-toolkit'
 import { tv } from 'tailwind-variants'
 import { computed, reactive, useId, watch } from 'vue'
 
-import type { VariableTokenFields } from '@open-pencil/core/editor'
+import type { VariableTokenFields } from '@open-pencil/core'
 import {
   cssNameCodeSyntax,
   explicitCSSName,
@@ -14,16 +14,15 @@ import {
 } from '@open-pencil/dom-css/export'
 import {
   TOKEN_UNITS,
-  tokenNumberFromUnit,
-  tokenNumberInUnit,
-  type Color,
   type TokenExpression,
   type Variable,
   type VariableCollection,
   type VariableScope,
   type VariableValue
 } from '@open-pencil/scene-graph'
+import type { Color } from '@open-pencil/scene-graph/primitives'
 import { randomHex } from '@open-pencil/scene-graph/random'
+import { tokenNumberFromUnit, tokenNumberInUnit } from '@open-pencil/scene-graph/variables'
 import { useI18n } from '@open-pencil/vue'
 
 import type { AliasCandidate, TokenRow } from '@/app/editor/tokens/model'

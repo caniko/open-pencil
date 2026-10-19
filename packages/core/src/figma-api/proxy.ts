@@ -1,10 +1,4 @@
-import {
-  createsComponentCycle,
-  recordInstanceOverride,
-  slotPropertyId
-} from '@open-pencil/scene-graph'
 import type {
-  GroupFitOptions,
   HyperlinkTarget,
   SceneGraph,
   SceneNode,
@@ -18,10 +12,14 @@ import {
   getFillOkHCL,
   getStrokeOkHCL,
   setNodeFillOkHCL,
-  setNodeStrokeOkHCL
+  setNodeStrokeOkHCL,
+  type OkHCLColor,
+  type OkHCLPayload
 } from '@open-pencil/scene-graph/color'
-import type { OkHCLColor, OkHCLPayload } from '@open-pencil/scene-graph/color'
+import type { GroupFitOptions } from '@open-pencil/scene-graph/group-bounds'
+import { createsComponentCycle, recordInstanceOverride } from '@open-pencil/scene-graph/instances'
 import type { Rect, Vector } from '@open-pencil/scene-graph/primitives'
+import { slotPropertyId } from '@open-pencil/scene-graph/slots'
 
 import { assertNodeEditable } from '#core/editor/capabilities'
 import type { FigmaEffect } from '#core/figma-api/effects'
@@ -427,7 +425,7 @@ export class FigmaNodeProxy {
     )
     prepareSlotMove(this[INTERNAL_GRAPH], this[INTERNAL_ID], child[INTERNAL_ID], 'insertChild')
     this._reparentAndFit(child[INTERNAL_ID])
-    this[INTERNAL_GRAPH].reorderChild(child[INTERNAL_ID], this[INTERNAL_ID], index)
+    this[INTERNAL_GRAPH].insertChildAt(child[INTERNAL_ID], this[INTERNAL_ID], index)
   }
 
   clone(): FigmaNodeProxy {

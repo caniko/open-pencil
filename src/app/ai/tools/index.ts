@@ -1,7 +1,7 @@
 import { tool } from 'ai'
 import { isPlainObject } from 'es-toolkit'
 
-import { graphFromPageSnapshot, isEmptyDocumentChange } from '@open-pencil/core/editor'
+import { graphFromPageSnapshot, isEmptyDocumentChange } from '@open-pencil/core'
 import type { FigmaAPI } from '@open-pencil/core/figma-api'
 import {
   registerComponentCatalog,

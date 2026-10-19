@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
-import { figmaDevStatusOf, type StatusState } from '@open-pencil/scene-graph'
 import { colorToHex } from '@open-pencil/scene-graph/color'
+import { figmaDevStatusOf, type StatusState } from '@open-pencil/scene-graph/statuses'
 import { useStatusMessages } from '@open-pencil/vue'
 
 import { STATUS_COLORS } from '@/app/editor/statuses/workflow'

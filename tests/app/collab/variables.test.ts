@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph, type Color, type Variable } from '@open-pencil/scene-graph'
+import { SceneGraph, type Variable } from '@open-pencil/scene-graph'
+import type { Color } from '@open-pencil/scene-graph/primitives'
 
 import { openRoomSession, type RoomSession } from '@/app/collab/session'
 import { createEditorStore, type EditorStore } from '@/app/editor/session'

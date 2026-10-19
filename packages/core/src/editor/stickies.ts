@@ -1,16 +1,17 @@
+import type { SceneNode } from '@open-pencil/scene-graph'
 import {
   createSticky,
   DEFAULT_STICKY_COLOR,
   generatedFrameOwner,
-  rescaleNodeTree,
   stickyScale,
   stickyWidth,
   STICKY_SIZE,
   stickyBodySizeFields,
-  stickySublayers
-} from '@open-pencil/scene-graph'
-import type { SceneNode, StickyTextSize } from '@open-pencil/scene-graph'
+  stickySublayers,
+  type StickyTextSize
+} from '@open-pencil/scene-graph/generated'
 import type { Color, Vector } from '@open-pencil/scene-graph/primitives'
+import { rescaleNodeTree } from '@open-pencil/scene-graph/scaling'
 
 import { recordSubtreeEdit } from '#core/editor/components/slots/history'
 import type { EditorContext } from '#core/editor/types'

@@ -3,7 +3,7 @@ import { useElementSize } from '@vueuse/core'
 import { tv } from 'tailwind-variants'
 import { computed, ref, useTemplateRef, watch } from 'vue'
 
-import type { VariableTokenFields } from '@open-pencil/core/editor'
+import type { VariableTokenFields } from '@open-pencil/core'
 import type { TokenStylesheetFormat } from '@open-pencil/dom-css/export'
 import {
   isLibraryCollection,

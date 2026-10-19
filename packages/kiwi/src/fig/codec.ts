@@ -98,8 +98,6 @@ export function peekMessageType(data: Uint8Array): number | null {
 
 // Type definitions
 
-export type { Color, GUID, Matrix, Vector } from './types'
-
 export interface ParentIndex {
   guid: GUID
   position: string
@@ -523,5 +521,3 @@ export function createNodeChange(opts: {
 
   return change
 }
-
-export { parseVariableId } from './variable-bindings'

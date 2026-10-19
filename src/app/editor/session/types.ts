@@ -1,4 +1,4 @@
-import { createDefaultEditorState, type EditorState } from '@open-pencil/core/editor'
+import { createDefaultEditorState, type EditorState } from '@open-pencil/core'
 import type { DocumentColorSpace } from '@open-pencil/scene-graph'
 import type { PresentationColorSpace } from '@open-pencil/vue'
 

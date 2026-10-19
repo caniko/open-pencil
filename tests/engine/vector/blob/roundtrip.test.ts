@@ -3,9 +3,9 @@ import { describe, test, expect } from 'bun:test'
 import {
   buildStyleOverrideTable,
   encodeVectorNetworkBlob,
-  decodeVectorNetworkBlob,
-  type VectorNetwork
-} from '@open-pencil/core'
+  decodeVectorNetworkBlob
+} from '@open-pencil/fig/node-change'
+import type { VectorNetwork } from '@open-pencil/scene-graph'
 
 import {
   lineNetwork,

@@ -1,5 +1,5 @@
 import type { RenderColorSpace } from '@open-pencil/scene-graph/color'
-import { resolveNodeTextDirection } from '@open-pencil/scene-graph/text-direction'
+import { resolveNodeTextDirection } from '@open-pencil/scene-graph/text/direction'
 
 import { computeContentBounds } from '#core/io/formats/raster'
 

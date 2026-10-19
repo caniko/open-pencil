@@ -5,8 +5,9 @@ import {
   replaceSelectionColor,
   selectionColors,
   selectionColorsShown
-} from '@open-pencil/core/editor'
-import type { Color, Fill } from '@open-pencil/scene-graph'
+} from '@open-pencil/core'
+import type { Fill } from '@open-pencil/scene-graph'
+import type { Color } from '@open-pencil/scene-graph/primitives'
 
 const RED = { r: 1, g: 0.3, b: 0.2, a: 1 }
 const BLUE = { r: 0.2, g: 0.4, b: 1, a: 1 }
@@ -43,12 +44,23 @@ function setup() {
   })
   const ellipse = graph.createNode('ELLIPSE', pageId, { fills: [solid(BLUE)] })
   const text = graph.createNode('TEXT', pageId, { fills: [solid(BLACK)] })
-  return { graph, frame: frame.id, rectA: rectA.id, rectB: rectB.id, ellipse: ellipse.id, text: text.id }
+  return {
+    graph,
+    frame: frame.id,
+    rectA: rectA.id,
+    rectB: rectB.id,
+    ellipse: ellipse.id,
+    text: text.id
+  }
 }
 
 const hex = (color: Color) =>
   [color.r, color.g, color.b]
-    .map((channel) => Math.round(channel * 255).toString(16).padStart(2, '0'))
+    .map((channel) =>
+      Math.round(channel * 255)
+        .toString(16)
+        .padStart(2, '0')
+    )
     .join('')
     .toUpperCase()
 
@@ -57,7 +69,9 @@ describe('selection colors', () => {
   // the rectangle, so it is used twice.
   test('lists fills and strokes, most used first', () => {
     const { graph, text, rectA } = setup()
-    expect(selectionColors(graph, [text, rectA]).map((entry) => [hex(entry.color), entry.count])).toEqual([
+    expect(
+      selectionColors(graph, [text, rectA]).map((entry) => [hex(entry.color), entry.count])
+    ).toEqual([
       ['000000', 2],
       ['FF4D33', 1]
     ])
@@ -81,7 +95,10 @@ describe('selection colors', () => {
       { color: { r: 0, g: 1, b: 0, a: 1 }, opacity: 0.5 }
     )
     expect(updates.map((update) => update.id)).toEqual([frame, ellipse])
-    expect(updates[0]?.changes.fills?.[0]).toMatchObject({ color: { r: 0, g: 1, b: 0 }, opacity: 0.5 })
+    expect(updates[0]?.changes.fills?.[0]).toMatchObject({
+      color: { r: 0, g: 1, b: 0 },
+      opacity: 0.5
+    })
   })
 
   // Figma desktop 126 hides the list when the Fill and Stroke sections already show every colour.

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { computeImageHash, imageMimeType } from '@open-pencil/scene-graph'
+import { computeImageHash, imageMimeType } from '@open-pencil/scene-graph/images'
 
 describe('computeImageHash', () => {
   test('names bytes by their SHA-1, as Figma names images', () => {

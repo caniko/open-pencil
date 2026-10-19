@@ -8,13 +8,13 @@ import type {
   TextDecorationStyle
 } from '@open-pencil/scene-graph'
 import { resolveRGBAForPreview } from '@open-pencil/scene-graph/color'
+import { weightToStyle } from '@open-pencil/scene-graph/font-style'
 
 import { outlineInk, savedGlyphInk, type InkSpan } from '#core/canvas/text/ink'
 import { laidOutGlyphs, type LaidOutGlyph } from '#core/canvas/text/placed'
 import type { PreparedText } from '#core/canvas/text/preparation/cache'
 import { shownText } from '#core/text/case'
 import { characterStyles, TEXT_STYLE_KEYS, type CharacterStyle } from '#core/text/character-style'
-import { weightToStyle } from '#core/text/fonts'
 import { fontDecorationMetricsSync, type FontDecorationMetrics } from '#core/text/opentype'
 
 /**

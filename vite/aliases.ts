@@ -61,15 +61,6 @@ export function createOpenPencilAliases(rootDir: string, options: { cloud?: bool
       find: /^@open-pencil\/scene-graph$/,
       replacement: resolve(rootDir, 'packages/scene-graph/src/index.ts')
     },
-    // Subpaths whose names differ from their files under src/.
-    {
-      find: /^@open-pencil\/scene-graph\/text-direction$/,
-      replacement: resolve(rootDir, 'packages/scene-graph/src/text/direction.ts')
-    },
-    {
-      find: /^@open-pencil\/scene-graph\/text-picture$/,
-      replacement: resolve(rootDir, 'packages/scene-graph/src/text/picture.ts')
-    },
     { find: '@open-pencil/scene-graph', replacement: resolve(rootDir, 'packages/scene-graph/src') },
     { find: '#cloud', replacement: resolve(rootDir, 'packages/cloud/src') },
     {
@@ -88,7 +79,6 @@ export function createOpenPencilAliases(rootDir: string, options: { cloud?: bool
     },
     { find: /^@open-pencil\/pen$/, replacement: resolve(rootDir, 'packages/pen/src/index.ts') },
     { find: '@open-pencil/pen', replacement: resolve(rootDir, 'packages/pen/src') },
-    { find: /^@open-pencil\/kiwi$/, replacement: resolve(rootDir, 'packages/kiwi/src/index.ts') },
     { find: '@open-pencil/kiwi', replacement: resolve(rootDir, 'packages/kiwi/src') },
     { find: /^@open-pencil\/fig$/, replacement: resolve(rootDir, 'packages/fig/src/index.ts') },
     { find: '@open-pencil/fig', replacement: resolve(rootDir, 'packages/fig/src') },

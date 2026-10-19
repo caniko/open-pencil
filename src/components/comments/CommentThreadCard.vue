@@ -7,7 +7,8 @@ import {
 } from 'reka-ui'
 import { computed, ref, useTemplateRef } from 'vue'
 
-import { liveReplies, type CommentThread } from '@open-pencil/scene-graph'
+import type { CommentThread } from '@open-pencil/scene-graph'
+import { liveReplies } from '@open-pencil/scene-graph/comments'
 import { useCommentMessages, useCommonMessages } from '@open-pencil/vue'
 
 import IconButton from '@/components/ui/button/IconButton.vue'

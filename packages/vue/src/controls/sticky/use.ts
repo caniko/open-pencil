@@ -1,7 +1,11 @@
 import { computed } from 'vue'
 
-import { stickySublayers, stickyTextSize } from '@open-pencil/scene-graph'
-import type { SceneNode, StickyTextSize } from '@open-pencil/scene-graph'
+import type { SceneNode } from '@open-pencil/scene-graph'
+import {
+  stickySublayers,
+  stickyTextSize,
+  type StickyTextSize
+} from '@open-pencil/scene-graph/generated'
 import type { Color } from '@open-pencil/scene-graph/primitives'
 
 import { useEditor } from '#vue/editor/context'

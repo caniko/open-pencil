@@ -1,7 +1,9 @@
 import { isEqual } from 'es-toolkit'
 
-import { isGeneratedFrame, readIcon, slotPropertyId } from '@open-pencil/scene-graph'
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import { isGeneratedFrame } from '@open-pencil/scene-graph/generated'
+import { readIcon } from '@open-pencil/scene-graph/icons'
+import { slotPropertyId } from '@open-pencil/scene-graph/slots'
 
 import type { LayerNode, LayerRow, LayerSelectionMode } from '#vue/primitives/LayerTree/context'
 

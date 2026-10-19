@@ -1,4 +1,4 @@
-import type { EditorState } from '@open-pencil/core/editor'
+import type { EditorState } from '@open-pencil/core'
 import { filesMessages } from '@open-pencil/vue'
 
 import { downloadBlob } from '@/app/document/io/browser'

@@ -1,16 +1,16 @@
 import { isEqual } from 'es-toolkit'
 import { computed, shallowRef, watch } from 'vue'
 
+import { parseColor } from '@open-pencil/scene-graph/color'
+import type { Color } from '@open-pencil/scene-graph/primitives'
+import { randomHex } from '@open-pencil/scene-graph/random'
 import {
   STATUS_WORKFLOW_PRESETS,
   statusWorkflowImpact,
   type StatusState,
   type StatusWorkflow,
   type StatusWorkflowPreset
-} from '@open-pencil/scene-graph'
-import { parseColor } from '@open-pencil/scene-graph/color'
-import type { Color } from '@open-pencil/scene-graph/primitives'
-import { randomHex } from '@open-pencil/scene-graph/random'
+} from '@open-pencil/scene-graph/statuses'
 import { useSceneComputed } from '@open-pencil/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'

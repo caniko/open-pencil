@@ -14,7 +14,7 @@ bun add @open-pencil/core @open-pencil/vue canvaskit-wasm
 SDK znajduje się w monorepo OpenPencil i jest publikowany jako pakiet `@open-pencil/vue`.
 
 ```ts
-import { createEditor } from '@open-pencil/core/editor'
+import { createEditor } from '@open-pencil/core'
 import { provideEditor, useCanvas } from '@open-pencil/vue'
 ```
 
@@ -31,7 +31,7 @@ Aplikacja oparta na SDK składa się z trzech warstw:
 ### 1. Utwórz edytor
 
 ```ts
-import { createEditor } from '@open-pencil/core/editor'
+import { createEditor } from '@open-pencil/core'
 
 const editor = createEditor({
   width: 1200,
@@ -45,7 +45,7 @@ const editor = createEditor({
 <script setup lang="ts">
 import { provideEditor } from '@open-pencil/vue'
 
-import type { Editor } from '@open-pencil/core/editor'
+import type { Editor } from '@open-pencil/core'
 
 const props = defineProps<{
   editor: Editor

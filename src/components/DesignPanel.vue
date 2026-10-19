@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { getNodeEditCapability } from '@open-pencil/core/editor'
-import { layerResizes, readIcon } from '@open-pencil/scene-graph'
+import { getNodeEditCapability } from '@open-pencil/core'
+import { layerResizes } from '@open-pencil/scene-graph/generated'
+import { readIcon } from '@open-pencil/scene-graph/icons'
 import { useI18n, useSceneComputed, useSelectionState, useEditorCommands } from '@open-pencil/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'

@@ -1,5 +1,5 @@
 import type { Fill, NodeType, SceneNode, Stroke } from '@open-pencil/scene-graph'
-import { DEFAULT_STROKE_WEIGHT } from '@open-pencil/scene-graph'
+import { DEFAULT_STROKE_WEIGHT } from '@open-pencil/scene-graph/constants'
 import { copyFills, copyStrokes } from '@open-pencil/scene-graph/copy'
 
 import {
