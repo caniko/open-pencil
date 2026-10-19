@@ -2,7 +2,7 @@
 import { tv } from 'tailwind-variants'
 import { ref } from 'vue'
 
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@open-pencil/vue/i18n'
 
 import { modelProviderName } from '@/app/ai/models/provider-name'
 import {

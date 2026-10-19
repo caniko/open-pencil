@@ -12,7 +12,7 @@ import type { GUID as KiwiGUID } from '@open-pencil/kiwi/fig'
 import { parsePenFile, type PenDocument } from '@open-pencil/pen'
 import { SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
 import type { Color, Vector } from '@open-pencil/scene-graph/primitives'
-import { testIdSelector } from '@open-pencil/vue'
+import { testIdSelector } from '@open-pencil/vue/testing'
 
 const graph = new SceneGraph()
 const editorFactory: typeof createEditor = createEditor

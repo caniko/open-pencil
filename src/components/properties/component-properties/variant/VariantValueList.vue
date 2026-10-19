@@ -3,7 +3,8 @@ import { omit } from 'es-toolkit'
 import { ref, type ComponentPublicInstance } from 'vue'
 
 import type { VariantMutationResult } from '@open-pencil/core'
-import { useFlatReorderDrag, useI18n } from '@open-pencil/vue'
+import { useI18n } from '@open-pencil/vue/i18n'
+import { useFlatReorderDrag } from '@open-pencil/vue/shared/drag'
 
 import IconButton from '@/components/ui/button/IconButton.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'

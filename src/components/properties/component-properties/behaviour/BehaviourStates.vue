@@ -2,7 +2,8 @@
 import { computed } from 'vue'
 
 import { INTERACTION_STATES, type InteractionState } from '@open-pencil/scene-graph/behaviours'
-import { useI18n, type BehaviourStatesControl } from '@open-pencil/vue'
+import type { BehaviourStatesControl } from '@open-pencil/vue/controls/behaviour'
+import { useI18n } from '@open-pencil/vue/i18n'
 
 import PanelFieldGroup from '@/components/ui/panel/PanelFieldGroup.vue'
 import AppPickerField from '@/components/ui/select/AppPickerField.vue'

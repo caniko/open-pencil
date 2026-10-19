@@ -23,7 +23,7 @@ import {
 import type { Color } from '@open-pencil/scene-graph/primitives'
 import { randomHex } from '@open-pencil/scene-graph/random'
 import { tokenNumberFromUnit, tokenNumberInUnit } from '@open-pencil/scene-graph/variables'
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@open-pencil/vue/i18n'
 
 import type { AliasCandidate, TokenRow } from '@/app/editor/tokens/model'
 import { SCOPES_BY_TYPE } from '@/app/editor/tokens/scopes'

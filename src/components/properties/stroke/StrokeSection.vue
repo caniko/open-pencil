@@ -4,18 +4,16 @@ import { computed, ref } from 'vue'
 import type { Fill, SceneNode, Stroke } from '@open-pencil/scene-graph'
 import { colorToHexRaw } from '@open-pencil/scene-graph/color'
 import type { Color } from '@open-pencil/scene-graph/primitives'
+import { useColorBindingProvider } from '@open-pencil/vue/controls/binding-provider'
+import { applySolidStrokeColor, applyStrokePaint } from '@open-pencil/vue/controls/color-model'
+import { MIXED, useNodeProps } from '@open-pencil/vue/controls/node-props'
+import { useOkHCL } from '@open-pencil/vue/controls/okhcl'
+import { useStrokeControls } from '@open-pencil/vue/controls/stroke'
+import { useI18n } from '@open-pencil/vue/i18n'
 import {
-  applySolidStrokeColor,
-  applyStrokePaint,
   BindableValueRoot,
-  MIXED,
-  useColorBindingProvider,
-  useI18n,
-  useNodeProps,
-  useOkHCL,
-  useStrokeControls,
   type BindableValueActions
-} from '@open-pencil/vue'
+} from '@open-pencil/vue/primitives/BindableValue'
 
 import FillPicker from '@/components/fill-picker/FillPicker.vue'
 import NumberField from '@/components/inputs/NumberField.vue'

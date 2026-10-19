@@ -1,5 +1,5 @@
 import type { EditorState } from '@open-pencil/core'
-import { filesMessages } from '@open-pencil/vue'
+import { filesMessages } from '@open-pencil/vue/i18n'
 
 import { downloadBlob } from '@/app/document/io/browser'
 import { documentNameFromFigPath } from '@/app/document/io/names'

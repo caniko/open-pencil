@@ -17,7 +17,7 @@ import type {
 import { colorToHex } from '@open-pencil/scene-graph/color'
 import type { Color } from '@open-pencil/scene-graph/primitives'
 import { tokenNumberFromUnit, tokenNumberInUnit } from '@open-pencil/scene-graph/variables'
-import { fuzzyFilter } from '@open-pencil/vue'
+import { fuzzyFilter } from '@open-pencil/vue/shared/search'
 
 /** One mode's value as the stylesheet writes it, with what the panel previews beside it. */
 export interface TokenModeValue {

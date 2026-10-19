@@ -12,7 +12,8 @@ import IconChevronDown from '~icons/lucide/chevron-down'
 
 import { layerTypeOptions, type LayerType } from '@open-pencil/core'
 import type { SceneNode } from '@open-pencil/scene-graph'
-import { useI18n, useRetainedPopup } from '@open-pencil/vue'
+import { useI18n } from '@open-pencil/vue/i18n'
+import { useRetainedPopup } from '@open-pencil/vue/lifecycle/retention'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { NODE_ICONS } from '@/app/editor/icons'

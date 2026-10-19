@@ -14,7 +14,8 @@ const CLOSE_SCRIPT = `</${'script'}>`
 const SNIPPET = dedent`
   <script setup lang="ts">
   import { createEditor } from '@open-pencil/core'
-  import { CanvasRoot, CanvasSurface, provideEditor } from '@open-pencil/vue'
+  import { CanvasRoot, CanvasSurface } from '@open-pencil/vue/canvas'
+  import { provideEditor } from '@open-pencil/vue'
 
   const editor = createEditor()
   provideEditor(editor)

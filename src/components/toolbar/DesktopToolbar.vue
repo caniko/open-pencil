@@ -5,9 +5,9 @@ import type { EditorToolDef, Tool } from '@open-pencil/core'
 import {
   getToolbarToolSelection,
   isToolbarToolActive,
-  toolbarToolTestId,
   ToolbarItem
-} from '@open-pencil/vue'
+} from '@open-pencil/vue/primitives/Toolbar'
+import { toolbarToolTestId } from '@open-pencil/vue/testing'
 
 import type { ToolbarAction, ToolbarItem as ToolbarLayoutItem } from '@/app/editor/toolbar/layout'
 import { toolTip } from '@/app/editor/toolbar/shortcuts'

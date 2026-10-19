@@ -14,7 +14,7 @@ import {
 import { computed, onMounted, useTemplateRef } from 'vue'
 
 import type { DocumentVersion } from '@open-pencil/cloud/contract'
-import { useCloudMessages, useI18n } from '@open-pencil/vue'
+import { useCloudMessages, useI18n } from '@open-pencil/vue/i18n'
 
 import { duplicateVersion, editVersion, restoreVersion } from '@/app/cloud/versions/actions'
 import {

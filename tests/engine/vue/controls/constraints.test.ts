@@ -7,7 +7,11 @@ import {
   constrainedChildRect,
   type ResizeSnapshot
 } from '@open-pencil/scene-graph/resize'
-import { constraintPins, isConstraintEligible, toggleConstraintPin } from '@open-pencil/vue'
+import {
+  constraintPins,
+  isConstraintEligible,
+  toggleConstraintPin
+} from '@open-pencil/vue/controls/constraints'
 
 import { applyResize } from '#vue/shared/input/resize'
 import type { DragResize } from '#vue/shared/input/types'

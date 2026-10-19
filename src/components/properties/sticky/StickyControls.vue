@@ -5,7 +5,7 @@ import { computed } from 'vue'
 import { colorToHex } from '@open-pencil/scene-graph/color'
 import { STICKY_COLORS, type StickyTextSize } from '@open-pencil/scene-graph/generated'
 import type { Color } from '@open-pencil/scene-graph/primitives'
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@open-pencil/vue/i18n'
 
 import PanelFieldGroup from '@/components/ui/panel/PanelFieldGroup.vue'
 import AppSelect from '@/components/ui/select/AppSelect.vue'

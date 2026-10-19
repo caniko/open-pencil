@@ -10,7 +10,9 @@ import {
   type VariableType,
   type VariableValue
 } from '@open-pencil/scene-graph'
-import { useI18n, useSceneComputed, useVariables } from '@open-pencil/vue'
+import { useI18n } from '@open-pencil/vue/i18n'
+import { useSceneComputed } from '@open-pencil/vue/internal/scene-computed'
+import { useVariables } from '@open-pencil/vue/variables'
 
 import {
   aliasCandidates,

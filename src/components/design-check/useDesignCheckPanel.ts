@@ -1,7 +1,7 @@
 import { computed, nextTick, onBeforeUnmount, reactive, ref, watch, type Ref } from 'vue'
 
 import type { SceneGraph } from '@open-pencil/scene-graph'
-import { useDesignCheckMessages } from '@open-pencil/vue'
+import { useDesignCheckMessages } from '@open-pencil/vue/i18n'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import {

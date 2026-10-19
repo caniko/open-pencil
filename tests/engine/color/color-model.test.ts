@@ -10,7 +10,7 @@ import {
   fromPercent,
   toPercent,
   useColorModel
-} from '@open-pencil/vue'
+} from '@open-pencil/vue/controls/color-model'
 
 function expectColorClose(actual: Color, expected: Color, precision = 5) {
   expect(actual.r).toBeCloseTo(expected.r, precision)

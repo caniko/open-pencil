@@ -2,13 +2,13 @@
 import { computed, ref } from 'vue'
 
 import type { BehaviourKind, InteractionState } from '@open-pencil/scene-graph/behaviours'
-import {
-  useI18n,
-  type BehaviourControl,
-  type BehaviourNumberControl,
-  type BehaviourPartControl,
-  type BehaviourValueControl
-} from '@open-pencil/vue'
+import type {
+  BehaviourControl,
+  BehaviourNumberControl,
+  BehaviourPartControl,
+  BehaviourValueControl
+} from '@open-pencil/vue/controls/behaviour'
+import { useI18n } from '@open-pencil/vue/i18n'
 
 import IconButton from '@/components/ui/button/IconButton.vue'
 import AppCollapsible from '@/components/ui/collapsible/AppCollapsible.vue'

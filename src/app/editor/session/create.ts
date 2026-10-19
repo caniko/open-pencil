@@ -3,7 +3,7 @@ import { shallowReactive } from 'vue'
 import { createEditor } from '@open-pencil/core'
 import { BUILTIN_IO_FORMATS, IORegistry } from '@open-pencil/core/io'
 import { SceneGraph } from '@open-pencil/scene-graph'
-import { createShaderRasterizer } from '@open-pencil/vue'
+import { createShaderRasterizer } from '@open-pencil/vue/canvas/surface'
 
 import { useCollabIdentity } from '@/app/collab/identity'
 import { recordPreparationOutcome } from '@/app/diagnostics'

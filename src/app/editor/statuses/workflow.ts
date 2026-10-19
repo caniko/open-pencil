@@ -11,7 +11,7 @@ import {
   type StatusWorkflow,
   type StatusWorkflowPreset
 } from '@open-pencil/scene-graph/statuses'
-import { useSceneComputed } from '@open-pencil/vue'
+import { useSceneComputed } from '@open-pencil/vue/internal/scene-computed'
 
 import { useEditorStore } from '@/app/editor/active-store'
 

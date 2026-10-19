@@ -2,8 +2,7 @@ import { tinykeys } from 'tinykeys'
 import type { KeyBindingMap } from 'tinykeys'
 import { onScopeDispose } from 'vue'
 
-import { editorCommandMetadata } from '@open-pencil/vue'
-import type { EditorCommandId } from '@open-pencil/vue'
+import { editorCommandMetadata, type EditorCommandId } from '@open-pencil/vue/editor/commands'
 
 import { isCloudBinding, openVersionDialog } from '@/app/cloud/integration'
 import { useComments } from '@/app/comments/use'

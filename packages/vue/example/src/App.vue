@@ -1,14 +1,8 @@
 <script setup lang="ts">
 import { createEditor, type Tool } from '@open-pencil/core'
-import {
-  OpenPencilProvider,
-  CanvasRoot,
-  CanvasSurface,
-  LayerTree,
-  ToolbarRoot,
-  ToolbarItem,
-  NodeProperties
-} from '@open-pencil/vue'
+import { OpenPencilProvider, LayerTree, NodeProperties } from '@open-pencil/vue'
+import { CanvasRoot, CanvasSurface } from '@open-pencil/vue/canvas'
+import { ToolbarRoot, ToolbarItem } from '@open-pencil/vue/primitives/Toolbar'
 
 const editor = createEditor()
 const pages = () => editor.graph.getPages()

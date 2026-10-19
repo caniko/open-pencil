@@ -15,7 +15,7 @@ actual color mutation begins and commits.
 
 ```ts twoslash
 import type { Color } from '@open-pencil/scene-graph/primitives'
-import { type BindingTarget, useColorBindingProvider } from '@open-pencil/vue'
+import { type BindingTarget, useColorBindingProvider } from '@open-pencil/vue/controls/binding-provider'
 
 const provider = useColorBindingProvider()
 const targets: BindingTarget[] = [

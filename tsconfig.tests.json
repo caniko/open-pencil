@@ -70,6 +70,9 @@
       "@open-pencil/vue": [
         "./packages/vue/src/index.ts"
       ],
+      "@open-pencil/vue/*": [
+        "./packages/vue/src/*"
+      ],
       "@open-pencil/core": [
         "./packages/core/src/index.ts"
       ],

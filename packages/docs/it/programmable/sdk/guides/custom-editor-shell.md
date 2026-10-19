@@ -30,7 +30,10 @@ Un’interfaccia tipica:
 ```vue
 <script setup lang="ts">
 import { createEditor } from '@open-pencil/core'
-import { provideEditor, CanvasRoot, CanvasSurface, ToolbarRoot, PageListRoot } from '@open-pencil/vue'
+import { provideEditor } from '@open-pencil/vue'
+import { CanvasRoot, CanvasSurface } from '@open-pencil/vue/canvas'
+import { ToolbarRoot } from '@open-pencil/vue/primitives/Toolbar'
+import { PageListRoot } from '@open-pencil/vue/primitives/PageList'
 
 const editor = createEditor({ width: 1440, height: 900 })
 provideEditor(editor)

@@ -16,3 +16,4 @@ export {
   patchLayerNode,
   visibleLayerRows
 } from '#vue/primitives/LayerTree/model'
+export { useLayerDrag } from './useLayerDrag'
