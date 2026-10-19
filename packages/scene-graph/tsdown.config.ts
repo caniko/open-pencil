@@ -10,6 +10,7 @@ export default defineConfig({
     'color/index': './src/color/index.ts',
     'comments/index': './src/comments/index.ts',
     'components/index': './src/components/index.ts',
+    'connectors/index': './src/connectors/index.ts',
     constants: './src/constants.ts',
     coordinate: './src/coordinate.ts',
     copy: './src/copy.ts',

@@ -15,7 +15,7 @@ import {
   buildConnectorSublayers,
   connectorRouteEnds,
   connectorSublayers
-} from '@open-pencil/scene-graph/generated'
+} from '@open-pencil/scene-graph/connectors'
 import type { Vector } from '@open-pencil/scene-graph/primitives'
 
 import { nodeChangeToProps } from '../convert'
@@ -158,7 +158,8 @@ function sublayerProps(
 
 /**
  * Gives an imported CONNECTOR its line type, caps, and sublayers: the line as Figma last routed
- * it, and its label on its plate. Its ends are linked once their layers exist.
+ * it, and its label on its plate. Its ends are linked once their layers exist; one saved without a
+ * route is routed by layout, once its label is measured.
  */
 function readConnector(
   graph: SceneGraph,

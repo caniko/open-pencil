@@ -17,6 +17,7 @@ import { LAYOUT_AFFECTING_KEYS } from './fields/layout'
 import * as HitTest from './hit-test'
 import { generateId } from './ids'
 import * as Instances from './instances'
+import { LayoutWrites } from './layout/writes'
 import Matrix from './matrix'
 import { CONTAINER_TYPES, createDefaultNode } from './node-defaults'
 import { updateNodePreview, type NodePreviewObserver } from './preview'
@@ -67,8 +68,11 @@ export class SceneGraph {
   private previewObservers: NodePreviewObserver[] = []
   private readonly changeObservers = new Set<NodeChangeObserver>()
   private importedIdGenerator: (() => string) | undefined
+  private layoutWrites: LayoutWrites | null = null
   positionPreviewVersion = 0
   instanceIndex = new Map<string, Set<string>>()
+  /** Every connector in the graph, so routing need not scan every layer. */
+  connectorIds = new Set<string>()
 
   constructor(private readonly idGenerator: () => string = generateId) {
     const root = createDefaultNode(this.idGenerator, 'FRAME', {
@@ -383,6 +387,7 @@ export class SceneGraph {
   private registerNode(node: SceneNode, parentId: string | null): SceneNode {
     node.parentId = parentId
     this.nodes.set(node.id, node)
+    if (node.type === 'CONNECTOR') this.connectorIds.add(node.id)
     for (const observer of this.changeObservers) observer.created(node)
     if (node.type === 'INSTANCE' && node.componentId) this.indexInstance(node.componentId, node.id)
     this.emitter.emit('node:created', node)
@@ -467,8 +472,32 @@ export class SceneGraph {
     return this.scopeDepths.derivedLayout > 0
   }
 
+  /**
+   * Runs `fn` as layout. Its updates are published once the outermost layout ends, still as
+   * layout, and without values a pass changed and a later pass put back (`LayoutWrites`).
+   */
   withLayoutMutations(fn: () => void): void {
-    this.withScope('layout', fn)
+    const outermost = this.scopeDepths.layout === 0
+    this.scopeDepths.layout++
+    if (outermost) this.layoutWrites = new LayoutWrites()
+    try {
+      fn()
+    } finally {
+      try {
+        if (outermost) this.publishLayoutUpdates()
+      } finally {
+        this.scopeDepths.layout--
+      }
+    }
+  }
+
+  private publishLayoutUpdates(): void {
+    const writes = this.layoutWrites
+    this.layoutWrites = null
+    if (!writes) return
+    for (const [id, changes] of writes.updates((nodeId) => this.nodes.get(nodeId))) {
+      this.emitter.emit('node:updated', id, changes)
+    }
   }
   get isApplyingLayout(): boolean {
     return this.scopeDepths.layout > 0
@@ -537,11 +566,17 @@ export class SceneGraph {
     if (changes.vectorNetwork) {
       changes = { ...changes, vectorNetwork: normalizeVectorNetwork(changes.vectorNetwork) }
     }
+    this.layoutWrites?.record(node, changes)
     Object.assign(node, changes)
     if (changes.fills) removeStaleBindings(node, 'fills', changes)
     if (changes.strokes) removeStaleBindings(node, 'strokes', changes)
     for (const key of absent) Reflect.deleteProperty(node, key)
-    this.emitter.emit('node:updated', id, changes)
+    this.publishNodeUpdate(id, changes)
+  }
+
+  /** Publishes an update now, or leaves it to the running layout, which publishes once it ends. */
+  private publishNodeUpdate(id: string, changes: Partial<SceneNode>): void {
+    if (!this.layoutWrites) this.emitter.emit('node:updated', id, changes)
   }
 
   reparentNode(nodeId: string, newParentId: string): void {
@@ -625,6 +660,7 @@ export class SceneGraph {
     }
 
     if (node.type === 'INSTANCE' && node.componentId) this.unindexInstance(node.componentId, id)
+    this.connectorIds.delete(id)
     this.nodes.delete(id)
     this.emitter.emit('node:deleted', id, node.parentId)
   }

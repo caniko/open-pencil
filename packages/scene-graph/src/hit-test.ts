@@ -1,5 +1,5 @@
+import { hitsConnectorLine } from './connectors/hit'
 import { getWorldMatrix } from './coordinate'
-import { hitsConnectorLine } from './generated/connector'
 import type { SceneGraph } from './graph'
 import Matrix from './matrix'
 import type { SceneNode, NodeType } from './types'

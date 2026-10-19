@@ -1,6 +1,7 @@
 import { isEqual } from 'es-toolkit/predicate'
 
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import { connectorSublayers } from '@open-pencil/scene-graph/connectors'
 import { fitEnclosingGroups, type GroupFitOptions } from '@open-pencil/scene-graph/group-bounds'
 import { recordInstanceOverride } from '@open-pencil/scene-graph/instances'
 import { FITTED_CONTAINER_TYPES } from '@open-pencil/scene-graph/node-defaults'
@@ -31,6 +32,20 @@ export function raw(target: ProxyThis, internals: NodeProxyInternals): SceneNode
   const node = graph(target, internals).getNode(id)
   if (!node) throw new Error(`Node ${id} has been removed`)
   return node
+}
+
+/**
+ * The layer a node's strokes live on, as a proxy target: a connector keeps its stroke on its
+ * line, which Figma presents as the connector's own.
+ */
+export function strokeOwner(target: ProxyThis, internals: NodeProxyInternals): ProxyThis {
+  const node = raw(target, internals)
+  if (node.type !== 'CONNECTOR') return target
+  const line = connectorSublayers(graph(target, internals), node)?.line
+  if (!line) return target
+  const owner: ProxyThis = Object.create(target)
+  owner[internals.id] = line.id
+  return owner
 }
 
 export function assertProxyEditable(target: ProxyThis, internals: NodeProxyInternals): void {

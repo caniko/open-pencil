@@ -79,6 +79,11 @@
       "import": "./dist/controls/component-props/index.js",
       "default": "./dist/controls/component-props/index.js"
     },
+    "./controls/connector": {
+      "types": "./dist/controls/connector/index.d.ts",
+      "import": "./dist/controls/connector/index.js",
+      "default": "./dist/controls/connector/index.js"
+    },
     "./controls/constraints": {
       "types": "./dist/controls/constraints/index.d.ts",
       "import": "./dist/controls/constraints/index.js",

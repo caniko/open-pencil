@@ -48,6 +48,7 @@ export default defineConfig({
     'controls/color-model/index': './src/controls/color-model/index.ts',
     'controls/color-variable-binding/index': './src/controls/color-variable-binding/index.ts',
     'controls/component-props/index': './src/controls/component-props/index.ts',
+    'controls/connector/index': './src/controls/connector/index.ts',
     'controls/constraints/index': './src/controls/constraints/index.ts',
     'controls/effects/index': './src/controls/effects/index.ts',
     'controls/fill/index': './src/controls/fill/index.ts',

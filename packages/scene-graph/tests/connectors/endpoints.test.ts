@@ -5,7 +5,7 @@ import {
   boundEndpoint,
   buildConnectorSublayers,
   freeEndpoint
-} from '@open-pencil/scene-graph/generated'
+} from '@open-pencil/scene-graph/connectors'
 import { applyGraphTransfer, prepareGraphTransfer } from '@open-pencil/scene-graph/transfer'
 
 const straight = { tangentStart: { x: 0, y: 0 }, tangentEnd: { x: 0, y: 0 } }

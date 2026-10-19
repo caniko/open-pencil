@@ -6,6 +6,7 @@ import type { Color } from '@open-pencil/scene-graph/primitives'
 
 import {
   raw,
+  strokeOwner,
   updateNode,
   type NodeProxyInternals,
   type ProxyThis
@@ -93,7 +94,7 @@ export function installVisualNodeProxyAccessors(
     },
     strokes: {
       get(this: ProxyThis): readonly Stroke[] {
-        return Object.freeze(copyStrokes(raw(this, internals).strokes))
+        return Object.freeze(copyStrokes(raw(strokeOwner(this, internals), internals).strokes))
       },
       // Figma paints carry no geometry; a stroke takes the node's weight and alignment, which
       // outlast its strokes.
@@ -102,7 +103,8 @@ export function installVisualNodeProxyAccessors(
         value: readonly (Omit<Stroke, 'weight' | 'align'> &
           Partial<Pick<Stroke, 'weight' | 'align'>>)[]
       ) {
-        const geometry = newStrokeGeometry(raw(this, internals))
+        const owner = strokeOwner(this, internals)
+        const geometry = newStrokeGeometry(raw(owner, internals))
         // The script keeps its paint objects; the node gets its own copies of every nested value.
         const strokes = copyStrokes(
           value.map((stroke) => ({
@@ -118,7 +120,7 @@ export function installVisualNodeProxyAccessors(
           strokeWeight: geometry.weight,
           strokeAlign: geometry.align
         })
-        updateNode(this, internals, {
+        updateNode(owner, internals, {
           strokes,
           strokeWeight: kept.weight,
           strokeAlign: kept.align

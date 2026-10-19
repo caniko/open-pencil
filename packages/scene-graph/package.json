@@ -65,6 +65,12 @@
       "import": "./dist/components/index.js",
       "default": "./dist/components/index.js"
     },
+    "./connectors": {
+      "types": "./dist/connectors/index.d.ts",
+      "bun": "./src/connectors/index.ts",
+      "import": "./dist/connectors/index.js",
+      "default": "./dist/connectors/index.js"
+    },
     "./constants": {
       "types": "./dist/constants.d.ts",
       "bun": "./src/constants.ts",
