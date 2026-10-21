@@ -24,12 +24,22 @@ export function shapeWithTextFit(graph: SceneGraph, shape: SceneNode): Partial<S
   const label = shapeWithTextLabel(graph, shape)
   let height = shape.shapeTruncates ? shape.height : givenHeight(shape)
   if (label?.text && !shape.shapeTruncates) {
-    const wrapping: SceneNode = { ...label, textAutoResize: 'HEIGHT' }
     height = fitShapeWithTextHeight(shape.shapeWithTextType, shape.width, height, (maxWidth) =>
-      measureTextForLayout({ ...wrapping, width: maxWidth }, maxWidth)
+      measureTextForLayout(wholeText(label, maxWidth), maxWidth)
     )
   }
   return { height, ...shapeWithTextFrameFields(shape.shapeWithTextType, shape.width, height) }
+}
+
+/** A label's whole text wrapped at `width`, not cut short by a truncation it already has. */
+function wholeText(label: SceneNode, width: number): SceneNode {
+  return {
+    ...label,
+    ...SHAPE_WITH_TEXT_LABEL_LAYOUT,
+    textTruncation: 'DISABLED',
+    maxLines: null,
+    width
+  }
 }
 
 /**
@@ -40,8 +50,8 @@ function labelFit(shape: SceneNode, label: SceneNode): Partial<SceneNode> {
   const whole = { ...SHAPE_WITH_TEXT_LABEL_LAYOUT, textTruncation: 'DISABLED' } as const
   if (!shape.shapeTruncates || !label.text) return whole
   const box = shapeWithTextLabelBox(shape.shapeWithTextType, shape.width, shape.height)
-  const wrapped = { ...label, textAutoResize: 'HEIGHT', width: box.width } as const
-  if (measureTextForLayout(wrapped, box.width).height <= box.height) return whole
+  if (measureTextForLayout(wholeText(label, box.width), box.width).height <= box.height)
+    return whole
   return { textAutoResize: 'NONE', height: box.height, textTruncation: 'ENDING' }
 }
 

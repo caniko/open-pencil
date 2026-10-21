@@ -83,4 +83,23 @@ describe('shape with text size', () => {
       textAutoResize: 'HEIGHT'
     })
   })
+
+  test('a truncated label stays truncated however often layout runs', () => {
+    // As CanvasKit measures, a truncated label measures only the lines it shows.
+    setTextMeasurer((node) => {
+      const lines = node.text.split('\n').length
+      const shown = node.textTruncation === 'ENDING' ? Math.floor(node.height / 36) : lines
+      return { width: 40, height: Math.min(lines, shown) * 36 }
+    })
+    const graph = new SceneGraph()
+    const id = drawnShape(graph)
+    graph.updateNode(id, { height: 120 })
+    const label = shapeWithTextLabel(graph, getNodeOrThrow(graph, id))
+    if (!label) throw new Error('shape has no label')
+    graph.updateNode(label.id, { text: Array.from({ length: 8 }, () => 'line').join('\n') })
+    for (let pass = 0; pass < 3; pass++) {
+      computeAllLayouts(graph, id)
+      expect(getNodeOrThrow(graph, label.id).textTruncation).toBe('ENDING')
+    }
+  })
 })
