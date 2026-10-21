@@ -40,7 +40,7 @@ const sessionSockets = new Map<string, Set<WebSocket>>()
  * writes the paths the file tools name. Each folder is one URL segment, so the URL ends in the
  * file's own name.
  */
-function automationFiles(automationURL: string, token: string): AutomationFiles {
+export function automationFiles(automationURL: string, token: string): AutomationFiles {
   const base = new URL(automationURL.replace(/^ws/, 'http'))
   return {
     url: (path) =>

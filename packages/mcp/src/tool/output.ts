@@ -281,9 +281,12 @@ export async function readInsideRoot(
       throw new Error(`"${basename(realPath)}" is larger than ${MAX_FILE_TRANSFER_BYTES} bytes`)
     }
     await resolveSafePath(realPath, root)
-    const bytes = new Uint8Array(stats.size)
-    const { bytesRead } = await handle.read(bytes, 0, stats.size, 0)
-    return bytes.slice(0, bytesRead)
+    // Reads to the end through the same descriptor; a file grown past the cap since is refused.
+    const bytes = new Uint8Array(await handle.readFile())
+    if (bytes.byteLength > MAX_FILE_TRANSFER_BYTES) {
+      throw new Error(`"${basename(realPath)}" is larger than ${MAX_FILE_TRANSFER_BYTES} bytes`)
+    }
+    return bytes
   } finally {
     await handle.close()
   }

@@ -7,6 +7,7 @@ import * as layoutModule from '@open-pencil/core/layout'
 
 import { makeFigmaFromStore } from '@/app/automation/bridge/figma-factory'
 import { createAutomationCommandHandlers } from '@/app/automation/bridge/handlers'
+import { automationFiles } from '@/app/automation/bridge/server'
 import { recentDocuments } from '@/app/recent-files'
 import { recentFilesLimit } from '@/app/recent-files/preferences'
 import { appPreferences } from '@/app/settings/preferences/store'
@@ -372,13 +373,9 @@ describe('close_file and save_file never prompt', () => {
 })
 
 describe('file paths in a browser go through the MCP server', () => {
-  const files = {
-    url: (path: string) => new URL(`http://mcp.test/files${encodeURI(path)}`),
-    headers: { authorization: 'Bearer token' }
-  }
   const { handleRequest: handleThroughServer } = createAutomationCommandHandlers(
     makeFigmaFromStore,
-    files
+    automationFiles('ws://mcp.test', 'token')
   )
   const requestThroughServer = (command: string, args: Record<string, unknown>) =>
     handleThroughServer(getActiveStore(), command, args)
@@ -415,12 +412,13 @@ describe('file paths in a browser go through the MCP server', () => {
   test('opening a path fetches it from the server with the token', async () => {
     const bytes = new Uint8Array(await Bun.file(testPath('fixtures', 'slots.fig')).arrayBuffer())
     const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(bytes))
-    await settle(requestThroughServer('open_file', { path: '/root/my slots.fig' }))
+    await settle(requestThroughServer('open_file', { path: '/root/my #1 slots.fig' }))
 
     const [url, init] = fetch.mock.calls[0]
-    expect(String(url)).toBe('http://mcp.test/files/root/my%20slots.fig')
+    // A reserved character stays in the path rather than starting a fragment.
+    expect(String(url)).toBe('http://mcp.test/files/root/my%20%231%20slots.fig')
     expect(new Headers(init?.headers).get('authorization')).toBe('Bearer token')
-    expect(getActiveStore().state.documentName).toBe('my slots')
+    expect(getActiveStore().state.documentName).toBe('my #1 slots')
   })
 })
 
