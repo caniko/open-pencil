@@ -499,6 +499,12 @@ describe('MCP server with mcpRoot', () => {
       const get = await fetch(url(path), { headers: auth })
       expect(new Uint8Array(await get.arrayBuffer())).toEqual(bytes)
 
+      // Larger than one read chunk, so the file is read back across several.
+      const large = Uint8Array.from({ length: 2.5 * 1024 * 1024 }, (_, i) => i % 251)
+      await fetch(url(path), { method: 'PUT', headers: auth, body: large })
+      const back = await fetch(url(path), { headers: auth })
+      expect(new Uint8Array(await back.arrayBuffer())).toEqual(large)
+
       expect((await fetch(url(path))).status).toBe(401)
       const outside = join(TEST_MCP_ROOT, '..', 'outside.fig')
       expect(

@@ -1,5 +1,13 @@
 import { constants } from 'node:fs'
-import { lstat, mkdir, open, readlink, realpath, writeFile } from 'node:fs/promises'
+import {
+  lstat,
+  mkdir,
+  open,
+  readlink,
+  realpath,
+  writeFile,
+  type FileHandle
+} from 'node:fs/promises'
 import { dirname, basename, isAbsolute, join, parse, resolve, sep as osSep } from 'node:path'
 
 import { compact } from 'es-toolkit/array'
@@ -265,6 +273,34 @@ export async function writeInsideRoot(
   return { written: resolved, byteLength }
 }
 
+const READ_CHUNK_BYTES = 1024 * 1024
+
+/**
+ * Read an open file to its end in chunks, refusing it as soon as it passes the cap, so a file
+ * that grows while it is read is never buffered whole.
+ */
+async function readBounded(handle: FileHandle, name: string): Promise<Uint8Array<ArrayBuffer>> {
+  const chunks: Uint8Array[] = []
+  let total = 0
+  for (;;) {
+    const chunk = new Uint8Array(READ_CHUNK_BYTES)
+    const { bytesRead } = await handle.read(chunk, 0, chunk.length, total)
+    if (bytesRead === 0) break
+    total += bytesRead
+    if (total > MAX_FILE_TRANSFER_BYTES) {
+      throw new Error(`"${name}" is larger than ${MAX_FILE_TRANSFER_BYTES} bytes`)
+    }
+    chunks.push(chunk.subarray(0, bytesRead))
+  }
+  const bytes = new Uint8Array(total)
+  let offset = 0
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset)
+    offset += chunk.length
+  }
+  return bytes
+}
+
 /** Read a file inside `root`, refusing one larger than `MAX_FILE_TRANSFER_BYTES`. */
 export async function readInsideRoot(
   filePath: string,
@@ -281,12 +317,7 @@ export async function readInsideRoot(
       throw new Error(`"${basename(realPath)}" is larger than ${MAX_FILE_TRANSFER_BYTES} bytes`)
     }
     await resolveSafePath(realPath, root)
-    // Reads to the end through the same descriptor; a file grown past the cap since is refused.
-    const bytes = new Uint8Array(await handle.readFile())
-    if (bytes.byteLength > MAX_FILE_TRANSFER_BYTES) {
-      throw new Error(`"${basename(realPath)}" is larger than ${MAX_FILE_TRANSFER_BYTES} bytes`)
-    }
-    return bytes
+    return await readBounded(handle, basename(realPath))
   } finally {
     await handle.close()
   }
