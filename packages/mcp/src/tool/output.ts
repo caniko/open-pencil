@@ -309,6 +309,7 @@ export async function readInsideRoot(
   const { realPath } = await resolveSafePath(filePath, root)
   // One descriptor for the checks and the read, so the file cannot be swapped between them; a
   // symlink in its place is refused, and a folder swapped above it is caught by the re-check.
+  // Windows has no O_NOFOLLOW (it is undefined there), so only the re-check guards it.
   const handle = await open(realPath, constants.O_RDONLY | constants.O_NOFOLLOW)
   try {
     const stats = await handle.stat()

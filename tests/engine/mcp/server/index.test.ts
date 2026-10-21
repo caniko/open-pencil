@@ -6,7 +6,6 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
-import { compact } from 'es-toolkit'
 
 import { MCP_AGENT_HEADER } from '@open-pencil/core/constants'
 import { SceneGraph } from '@open-pencil/scene-graph'
@@ -489,7 +488,7 @@ describe('MCP server with mcpRoot', () => {
     await withMCPRootServer(TEST_MCP_ROOT, async (_client, _browser, _graph, httpPort) => {
       const path = join(TEST_MCP_ROOT, 'browser', 'saved.fig')
       const url = (filePath: string) =>
-        `http://127.0.0.1:${httpPort}/files/${compact(filePath.split(/[\\/]/)).map(encodeURIComponent).join('/')}`
+        `http://127.0.0.1:${httpPort}/files/${filePath.split(/[\\/]/).map(encodeURIComponent).join('/')}`
       const auth = { authorization: `Bearer ${TEST_AUTH_TOKEN}` }
       const bytes = new Uint8Array([80, 75, 3, 4, 1, 2, 3])
 
@@ -504,6 +503,13 @@ describe('MCP server with mcpRoot', () => {
       await fetch(url(path), { method: 'PUT', headers: auth, body: large })
       const back = await fetch(url(path), { headers: auth })
       expect(new Uint8Array(await back.arrayBuffer())).toEqual(large)
+
+      // A name the URL must carry exactly: a space, a fragment mark, a literal escape, Cyrillic.
+      const awkward = join(TEST_MCP_ROOT, 'browser', 'my #1 %20 файл.fig')
+      expect(
+        (await fetch(url(awkward), { method: 'PUT', headers: auth, body: bytes })).status
+      ).toBe(200)
+      expect(new Uint8Array(await readFile(awkward))).toEqual(bytes)
 
       expect((await fetch(url(path))).status).toBe(401)
       const outside = join(TEST_MCP_ROOT, '..', 'outside.fig')

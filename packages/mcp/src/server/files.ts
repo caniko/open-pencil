@@ -1,15 +1,16 @@
-import { isAbsolute } from 'node:path'
-
 import type { Context, Hono } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
 
 import { MAX_FILE_TRANSFER_BYTES, readInsideRoot, writeInsideRoot } from '#mcp/tool/output'
 
-/** The absolute path after `/files/`, one segment per folder, so the URL ends in the file's name. */
+/**
+ * The path after `/files/`, one encoded segment per folder, so the URL ends in the file's name.
+ * Empty segments keep a POSIX root (`/files//Users/…`) and a Windows share (`/files///server/…`).
+ * Decoded from the raw URL, since the router's path is already partly decoded.
+ */
 function filePath(c: Context): string {
-  const path = c.req.path.slice('/files/'.length).split('/').map(decodeURIComponent).join('/')
-  // A POSIX path loses its leading slash in the URL; a Windows one starts with its drive.
-  return isAbsolute(path) ? path : `/${path}`
+  const pathname = new URL(c.req.url).pathname
+  return pathname.slice('/files/'.length).split('/').map(decodeURIComponent).join('/')
 }
 
 function failure(c: Context, e: unknown) {

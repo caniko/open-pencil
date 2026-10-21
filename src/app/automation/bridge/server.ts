@@ -4,7 +4,6 @@
  * Connects to the bridge via WebSocket, receives RPC requests,
  * executes them against the live EditorStore, and sends results back.
  */
-import { compact } from 'es-toolkit'
 import * as v from 'valibot'
 
 import { randomHex } from '@open-pencil/scene-graph/random'
@@ -38,13 +37,12 @@ const sessionSockets = new Map<string, Set<WebSocket>>()
 /**
  * The MCP server's `/files/`, beside the socket the app connects to, where a browser app reads and
  * writes the paths the file tools name. Each folder is one URL segment, so the URL ends in the
- * file's own name.
+ * file's own name; a leading separator stays as an empty segment, as in a Windows share's `\\`.
  */
 export function automationFiles(automationURL: string, token: string): AutomationFiles {
   const base = new URL(automationURL.replace(/^ws/, 'http'))
   return {
-    url: (path) =>
-      new URL(`/files/${compact(path.split(/[\\/]/)).map(encodeURIComponent).join('/')}`, base),
+    url: (path) => new URL(`/files/${path.split(/[\\/]/).map(encodeURIComponent).join('/')}`, base),
     headers: { authorization: `Bearer ${token}` }
   }
 }

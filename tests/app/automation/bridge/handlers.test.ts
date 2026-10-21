@@ -392,7 +392,7 @@ describe('file paths in a browser go through the MCP server', () => {
     await requestThroughServer('save_file', { document_id: tab.id, path: '/root/copy.fig' })
 
     const [url, init] = fetch.mock.calls[0]
-    expect(String(url)).toBe('http://mcp.test/files/root/copy.fig')
+    expect(String(url)).toBe('http://mcp.test/files//root/copy.fig')
     expect(init?.method).toBe('PUT')
     expect(new Headers(init?.headers).get('authorization')).toBe('Bearer token')
     expect(tab.store.hasUnsavedChanges()).toBe(false)
@@ -416,7 +416,7 @@ describe('file paths in a browser go through the MCP server', () => {
 
     const [url, init] = fetch.mock.calls[0]
     // A reserved character stays in the path rather than starting a fragment.
-    expect(String(url)).toBe('http://mcp.test/files/root/my%20%231%20slots.fig')
+    expect(String(url)).toBe('http://mcp.test/files//root/my%20%231%20slots.fig')
     expect(new Headers(init?.headers).get('authorization')).toBe('Bearer token')
     expect(getActiveStore().state.documentName).toBe('my #1 slots')
   })
