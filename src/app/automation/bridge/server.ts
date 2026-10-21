@@ -4,12 +4,14 @@
  * Connects to the bridge via WebSocket, receives RPC requests,
  * executes them against the live EditorStore, and sends results back.
  */
+import { compact } from 'es-toolkit'
 import * as v from 'valibot'
 
 import { randomHex } from '@open-pencil/scene-graph/random'
 
 import { endAgentSession, readAgentSession } from '@/app/automation/agents'
 import { makeFigmaFromStore } from '@/app/automation/bridge/figma-factory'
+import type { AutomationFiles } from '@/app/automation/bridge/file-handlers'
 import { createAutomationCommandHandlers } from '@/app/automation/bridge/handlers'
 import { isUnknownRecord } from '@/app/automation/bridge/target'
 import type { EditorStore } from '@/app/editor/active-store'
@@ -33,6 +35,20 @@ const AutomationRequestJSON = v.pipe(
  */
 const sessionSockets = new Map<string, Set<WebSocket>>()
 
+/**
+ * The MCP server's `/files/`, beside the socket the app connects to, where a browser app reads and
+ * writes the paths the file tools name. Each folder is one URL segment, so the URL ends in the
+ * file's own name.
+ */
+function automationFiles(automationURL: string, token: string): AutomationFiles {
+  const base = new URL(automationURL.replace(/^ws/, 'http'))
+  return {
+    url: (path) =>
+      new URL(`/files/${compact(path.split(/[\\/]/)).map(encodeURIComponent).join('/')}`, base),
+    headers: { authorization: `Bearer ${token}` }
+  }
+}
+
 export function connectAutomation(
   getStore: () => EditorStore,
   authToken: string | null = null,
@@ -43,8 +59,10 @@ export function connectAutomation(
   let reconnectTimer: ReturnType<typeof setTimeout> | undefined
   let intentionalDisconnect = false
 
-  const { handleRequest: handleAutomationRequest } =
-    createAutomationCommandHandlers(makeFigmaFromStore)
+  const { handleRequest: handleAutomationRequest } = createAutomationCommandHandlers(
+    makeFigmaFromStore,
+    automationFiles(automationURL, token)
+  )
 
   async function handleRequest(_id: string, command: string, args: unknown): Promise<unknown> {
     return handleAutomationRequest(getStore(), command, args)

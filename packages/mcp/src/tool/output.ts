@@ -1,4 +1,4 @@
-import { lstat, mkdir, readlink, realpath, writeFile } from 'node:fs/promises'
+import { lstat, mkdir, readFile, readlink, realpath, stat, writeFile } from 'node:fs/promises'
 import { dirname, basename, isAbsolute, join, parse, resolve, sep as osSep } from 'node:path'
 
 import { compact } from 'es-toolkit/array'
@@ -236,14 +236,15 @@ export function writesFileOutput(toolName: string): boolean {
   return toolName in FILE_OUTPUTS
 }
 
-export async function writeToolOutput(
-  toolName: string,
-  result: Record<string, unknown>,
+/** The largest document `/files` passes either way, as the app caps documents it fetches. */
+export const MAX_FILE_TRANSFER_BYTES = 64 * 1024 * 1024
+
+/** Write `content` to a path inside `root`, creating its folders, and return where it landed. */
+export async function writeInsideRoot(
   filePath: string,
-  root: string
-): Promise<MCPResult | null> {
-  const content = FILE_OUTPUTS[toolName]?.(result)
-  if (content == null) return null
+  root: string,
+  content: string | Uint8Array
+): Promise<{ written: string; byteLength: number }> {
   const { resolved, realPath } = await resolveSafePath(filePath, root)
   // Use the canonical realPath for filesystem operations to prevent TOCTOU:
   // an attacker could swap a directory component with a symlink between
@@ -260,5 +261,29 @@ export async function writeToolOutput(
   await resolveSafePath(realPath, root)
   const byteLength =
     typeof content === 'string' ? Buffer.byteLength(content, 'utf8') : content.byteLength
-  return ok({ written: resolved, byteLength })
+  return { written: resolved, byteLength }
+}
+
+/** Read a file inside `root`, refusing one larger than `MAX_FILE_TRANSFER_BYTES`. */
+export async function readInsideRoot(
+  filePath: string,
+  root: string
+): Promise<Uint8Array<ArrayBuffer>> {
+  const { realPath } = await resolveSafePath(filePath, root)
+  const { size } = await stat(realPath)
+  if (size > MAX_FILE_TRANSFER_BYTES) {
+    throw new Error(`"${basename(realPath)}" is larger than ${MAX_FILE_TRANSFER_BYTES} bytes`)
+  }
+  return new Uint8Array(await readFile(realPath))
+}
+
+export async function writeToolOutput(
+  toolName: string,
+  result: Record<string, unknown>,
+  filePath: string,
+  root: string
+): Promise<MCPResult | null> {
+  const content = FILE_OUTPUTS[toolName]?.(result)
+  if (content == null) return null
+  return ok(await writeInsideRoot(filePath, root, content))
 }
