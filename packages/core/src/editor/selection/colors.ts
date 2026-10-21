@@ -47,8 +47,7 @@ function eachNode(graph: SceneGraph, ids: readonly string[], visit: (node: Scene
     visit(node)
     // Figma lists a note's body and colour, not the author line it writes itself.
     const author = node.type === 'STICKY' ? stickySublayers(graph, node)?.author : undefined
-    if (author) seen.add(author.id)
-    for (const childId of node.childIds) walk(childId)
+    for (const childId of node.childIds) if (childId !== author?.id) walk(childId)
   }
   for (const id of ids) walk(id)
 }

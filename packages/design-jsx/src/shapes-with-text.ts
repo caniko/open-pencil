@@ -109,7 +109,9 @@ export function shapeWithTextProps(graph: SceneGraph, node: SceneNode): JSXProp[
   }
   const label = shapeWithTextLabel(graph, node)
   if (label) props.push(...figJamTextProps(label))
-  const height = node.shapeUserHeight > 0 ? node.shapeUserHeight : node.height
+  // A truncating shape keeps the height it has; any other grows from the height it was given.
+  const height =
+    !node.shapeTruncates && node.shapeUserHeight > 0 ? node.shapeUserHeight : node.height
   if (node.width !== SHAPE_WITH_TEXT_SIZE) props.push(['w', node.width])
   if (height !== SHAPE_WITH_TEXT_SIZE) props.push(['h', height])
   if (node.shapeTruncates) props.push(['truncate', true])

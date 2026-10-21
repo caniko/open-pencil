@@ -70,6 +70,9 @@ describe('shapes with text in design JSX', () => {
     expect(shape).toMatchObject({ height: 120, shapeTruncates: true })
     expect(shapeWithTextLabel(graph, shape)?.textTruncation).toBe('ENDING')
     expect(sceneNodeToJSX(result.id, graph)).toContain('w={120} h={120} truncate')
+    // The height it keeps is written, even where the height it was given differs, as a file can.
+    graph.updateNode(shape.id, { shapeUserHeight: 90 })
+    expect(sceneNodeToJSX(result.id, graph)).toContain('w={120} h={120} truncate')
   })
 
   test('a prop of the wrong kind warns and is left out', async () => {

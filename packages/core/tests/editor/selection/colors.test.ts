@@ -104,5 +104,9 @@ describe('selection colors', () => {
     // The body's black at 80% and the note colour; the author's black at 50% is left out.
     expect(listed).toHaveLength(2)
     expect(listed).toContain(0.8)
+    // The author line listed on its own, before or after its note, is walked all the same.
+    const authorId = author?.id ?? ''
+    expect(selectionColors(graph, [authorId, note.id])).toHaveLength(3)
+    expect(selectionColors(graph, [note.id, authorId])).toHaveLength(3)
   })
 })
