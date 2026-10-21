@@ -19,13 +19,19 @@ const {
   workspace,
   host,
   savedAgo = null,
-  viewOnly = false
+  viewOnly = false,
+  notLive = false,
+  canRejoin = false
 } = defineProps<{
   state: CloudSyncState
   workspace: string
   host: string
   savedAgo?: string | null
   viewOnly?: boolean
+  /** The server ended this tab's live session; a conflict or failed save still shows first. */
+  notLive?: boolean
+  /** Whether rejoining loses nothing, which holds once the tab's changes are saved. */
+  canRejoin?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -33,23 +39,31 @@ const emit = defineEmits<{
   openWorkspace: []
   resolve: []
   retry: []
+  rejoin: []
 }>()
 
 const ui = cloudStatus()
 const popoverOpen = ref(false)
 /** Every action leads somewhere else, so the popover closes first. */
-function act(action: 'share' | 'openWorkspace' | 'resolve' | 'retry') {
+function act(action: 'share' | 'openWorkspace' | 'resolve' | 'retry' | 'rejoin') {
   popoverOpen.value = false
   if (action === 'share') emit('share')
   else if (action === 'openWorkspace') emit('openWorkspace')
   else if (action === 'resolve') emit('resolve')
+  else if (action === 'rejoin') emit('rejoin')
   else emit('retry')
 }
+const showsNotLive = computed(() => notLive && state !== 'conflict' && state !== 'error')
+const syncAttribute = computed(() => {
+  if (viewOnly) return 'view'
+  return showsNotLive.value ? 'not-live' : state
+})
 const popover = usePopoverUI({ content: 'w-72 p-3' })
 const t = useCloudMessages()
 const summary = computed(() => {
   const m = t.value
   if (viewOnly) return { label: m.viewOnly, detail: m.statusViewOnlyDetail }
+  if (showsNotLive.value) return { label: m.statusNotLive, detail: m.statusNotLiveDetail }
   const summaries: Record<CloudSyncState, { label: string; detail: string }> = {
     synced: {
       label: m.statusSavedTo({ workspace }),
@@ -70,10 +84,11 @@ const summary = computed(() => {
     <Tip :label="summary.label" as-child>
       <PopoverTrigger
         :class="ui.trigger()"
-        :data-state-sync="viewOnly ? 'view' : state"
+        :data-state-sync="syncAttribute"
         :aria-label="summary.label"
       >
         <icon-lucide-eye v-if="viewOnly" class="size-3.5" />
+        <icon-lucide-unplug v-else-if="showsNotLive" class="size-3.5" />
         <icon-lucide-cloud-check v-else-if="state === 'synced'" class="size-3.5" />
         <icon-lucide-loader-circle
           v-else-if="state === 'uploading'"
@@ -91,8 +106,9 @@ const summary = computed(() => {
     <PopoverPortal>
       <PopoverContent side="bottom" align="start" :side-offset="6" :class="popover.content">
         <div :class="ui.header()">
-          <span :class="ui.headerIcon()" :data-state-sync="viewOnly ? 'view' : state">
+          <span :class="ui.headerIcon()" :data-state-sync="syncAttribute">
             <icon-lucide-eye v-if="viewOnly" class="size-4" />
+            <icon-lucide-unplug v-else-if="showsNotLive" class="size-4" />
             <icon-lucide-git-compare-arrows v-else-if="state === 'conflict'" class="size-4" />
             <icon-lucide-circle-alert v-else-if="state === 'error'" class="size-4" />
             <icon-lucide-cloud-off v-else-if="state === 'offline'" class="size-4" />
@@ -122,6 +138,15 @@ const summary = computed(() => {
             @click="act('resolve')"
           >
             {{ t.statusChooseVersion }}
+          </AppButton>
+          <AppButton
+            v-else-if="showsNotLive && canRejoin"
+            size="sm"
+            color="primary"
+            variant="solid"
+            @click="act('rejoin')"
+          >
+            {{ t.statusRejoin }}
           </AppButton>
           <AppButton
             v-else-if="state === 'error' && !viewOnly"

@@ -27,6 +27,8 @@ import { shareRoomUploads, uploadStoredDocument } from './upload'
 
 /** Each Cloud tab's permission in its room, for the status beside the name. */
 export const cloudRoomPermissions = shallowRef<ReadonlyMap<EditorStore, 'edit' | 'view'>>(new Map())
+/** Tabs the relay turned away for good, for the status beside the name; they do not rejoin on their own. */
+export const cloudRoomsRefused = shallowRef<ReadonlySet<EditorStore>>(new Set())
 const starting = new WeakSet<EditorStore>()
 
 function setPermission(store: EditorStore, permission: 'edit' | 'view' | null) {
@@ -210,7 +212,7 @@ export function cloudRelayTransport(
   url: string,
   first: CollaborationTicket,
   next: () => Promise<CollaborationTicket>,
-  onRestored?: () => void
+  events: { onRestored?: () => void; onRefused?: () => void } = {}
 ): JoinCollabRoom {
   let unused: CollaborationTicket | null = first
   return createCloudRelayJoin({
@@ -222,7 +224,8 @@ export function cloudRelayTransport(
       if (ticket.roomId !== first.roomId) return null
       return { token: ticket.token, expiresAt: ticket.expiresAt }
     },
-    onRestored
+    onRestored: events.onRestored,
+    onRefused: events.onRefused
   })
 }
 
@@ -230,6 +233,48 @@ type LiveRoom = Pick<ReturnType<typeof openCloudDocumentRoom>, 'stop' | 'upload'
 
 /** Each tab's live Cloud room, stopped when the tab closes or the room starts over. */
 const liveRooms = new Map<EditorStore, LiveRoom>()
+
+function setRefused(store: EditorStore, refused: boolean) {
+  const next = new Set(cloudRoomsRefused.value)
+  if (refused) next.add(store)
+  else next.delete(store)
+  cloudRoomsRefused.value = next
+}
+
+/**
+ * The relay turned the tab away for good, so it leaves the room and nothing waits on it. A viewer
+ * stays read-only. An editor that can save takes its saving back: a tab that was not the room's
+ * saver had its edits counted as saved by the room, so it uploads the document as it stands, and
+ * a newer save from someone else comes back as a conflict to resolve rather than being lost.
+ */
+export function leaveRefusedRoom(
+  store: EditorStore,
+  room: { permission: 'edit' | 'view'; canSave: boolean }
+): void {
+  setRefused(store, true)
+  const stopForgetting = watch(allTabs, () => {
+    if (getTabForStore(store)) return
+    setRefused(store, false)
+    stopForgetting()
+  })
+  liveRooms.get(store)?.stop()
+  liveRooms.delete(store)
+  const session = roomForStore(store)
+  if (session) leaveRoom(session)
+  if (room.permission === 'view') {
+    store.setReadOnly(true)
+    return
+  }
+  if (!room.canSave || !store.getStorageBinding()) return
+  store.state.autosaveEnabled = true
+  void store.saveFigFile().catch(() => undefined)
+}
+
+/** Joins a refused tab's room again, showing the document as the server holds it. */
+export async function rejoinCloudRoom(store: EditorStore): Promise<void> {
+  setRefused(store, false)
+  await restartCloudRoom(store)
+}
 
 /** Leaves the room's saving and status behind once its tab closes. */
 export function stopWithTab(store: EditorStore, room: LiveRoom): void {
@@ -251,7 +296,15 @@ export function stopWithTab(store: EditorStore, room: LiveRoom): void {
  */
 export async function startCloudRoom(store: EditorStore): Promise<void> {
   const binding = store.getStorageBinding()
-  if (!binding || !isCloudBinding(binding) || roomForStore(store) || starting.has(store)) return
+  if (
+    !binding ||
+    !isCloudBinding(binding) ||
+    roomForStore(store) ||
+    starting.has(store) ||
+    cloudRoomsRefused.value.has(store)
+  ) {
+    return
+  }
   const target = cloudShareTarget(binding)
   if (!target?.discovery.capabilities.collaboration) return
   starting.add(store)
@@ -266,7 +319,10 @@ export async function startCloudRoom(store: EditorStore): Promise<void> {
     const room = openCloudDocumentRoom(store, {
       identity: account ? accountRoomIdentity(account) : undefined,
       roomId: first.roomId,
-      transport: cloudRelayTransport(first.serverURL, first, nextTicket, restart),
+      transport: cloudRelayTransport(first.serverURL, first, nextTicket, {
+        onRestored: restart,
+        onRefused: () => leaveRefusedRoom(store, { permission: first.permission, canSave: true })
+      }),
       permission: first.permission,
       roomIsCurrent: async () => (await nextTicket()).roomId === first.roomId,
       onRestored: restart

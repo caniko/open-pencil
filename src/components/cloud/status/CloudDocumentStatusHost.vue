@@ -8,7 +8,7 @@ import { useCloudMessages, useI18n } from '@open-pencil/vue'
 import { openCloudConnect } from '@/app/cloud/connect/flow'
 import { resolveCloudConflict, type CloudConflictChoice } from '@/app/cloud/documents/conflict'
 import { useCloudDocumentStatus } from '@/app/cloud/documents/status'
-import { cloudRoomPermissions } from '@/app/cloud/rooms/live'
+import { cloudRoomPermissions, cloudRoomsRefused, rejoinCloudRoom } from '@/app/cloud/rooms/live'
 import { showCloudServerOnHome } from '@/app/cloud/servers/store'
 import { cloudConnection } from '@/app/cloud/sessions/connection'
 import { cloudShareOpen } from '@/app/cloud/sharing/dialog'
@@ -35,6 +35,7 @@ const ago = (iso: string | null | undefined) =>
   iso ? formatCommentTime(iso, now.value.getTime(), locale.value) : ''
 const savedAgo = computed(() => ago(meta.value?.lastSyncedAt) || null)
 const viewOnly = computed(() => cloudRoomPermissions.value.get(store) === 'view')
+const notLive = computed(() => cloudRoomsRefused.value.has(store))
 /**
  * Saving and saved need nothing from the person, and the tab's dot already shows unsaved edits,
  * so the status shows only for what does: being offline, a failed save, a conflict, view only.
@@ -42,6 +43,7 @@ const viewOnly = computed(() => cloudRoomPermissions.value.get(store) === 'view'
 const needsAttention = computed(
   () =>
     viewOnly.value ||
+    notLive.value ||
     state.value === 'offline' ||
     state.value === 'error' ||
     state.value === 'conflict'
@@ -106,7 +108,10 @@ function retry() {
       :host="location.host"
       :saved-ago="savedAgo"
       :view-only="viewOnly"
+      :not-live="notLive"
+      :can-rejoin="state === 'synced'"
       @resolve="openConflict"
+      @rejoin="rejoinCloudRoom(store)"
       @share="cloudShareOpen = true"
       @retry="retry"
       @open-workspace="openWorkspace"

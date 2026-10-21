@@ -1,10 +1,16 @@
 import { describe, expect, test } from 'bun:test'
 
 import {
+  createRelayClientAssembler,
+  createRelayServerAssembler,
   decodeRelayClientFrame,
   decodeRelayServerFrame,
   encodeRelayClientFrame,
   encodeRelayServerFrame,
+  RELAY_FRAGMENT_BYTES,
+  RELAY_MINIMUM_MESSAGE_BYTES,
+  relayClientMessages,
+  relayServerMessages,
   type RelayClientFrame,
   type RelayServerFrame
 } from '#cloud/contract'
@@ -43,5 +49,60 @@ describe('relay frames', () => {
     expect(decodeRelayClientFrame(message.subarray(0, -2))).toBeNull()
     expect(decodeRelayClientFrame(new Uint8Array([7]))).toBeNull()
     expect(decodeRelayServerFrame(new Uint8Array([7]))).toBeNull()
+  })
+
+  test('split large frames into messages that join back into the frame', () => {
+    const payload = crypto.getRandomValues(new Uint8Array(RELAY_FRAGMENT_BYTES * 2 + 100))
+    const client: RelayClientFrame = {
+      type: 'message',
+      namespace: 'yjs-update',
+      target: null,
+      payload
+    }
+    const server: RelayServerFrame = {
+      type: 'message',
+      namespace: 'yjs-update',
+      from: 'a',
+      payload
+    }
+    for (const [messages, assembler, decode, frame] of [
+      [
+        relayClientMessages(client),
+        createRelayClientAssembler(() => Infinity),
+        decodeRelayClientFrame,
+        client
+      ],
+      [
+        relayServerMessages(server),
+        createRelayServerAssembler(() => Infinity),
+        decodeRelayServerFrame,
+        server
+      ]
+    ] as const) {
+      expect(messages).toHaveLength(3)
+      for (const message of messages)
+        expect(message.byteLength).toBeLessThanOrEqual(RELAY_MINIMUM_MESSAGE_BYTES)
+      const results = messages.map((message) => assembler.push(message))
+      expect(results.slice(0, -1).map((result) => result.type)).toEqual(['partial', 'partial'])
+      const last = results.at(-1)
+      expect(last?.type === 'frame' ? decode(last.data) : null).toEqual(frame)
+    }
+  })
+
+  test('send small frames whole and refuse joined frames past the limit', () => {
+    const small: RelayClientFrame = { type: 'auth', token: 'ticket' }
+    expect(relayClientMessages(small)).toEqual([encodeRelayClientFrame(small)])
+    const assembler = createRelayClientAssembler(() => RELAY_FRAGMENT_BYTES)
+    const [first, second] = relayClientMessages({
+      type: 'message',
+      namespace: 'yjs-update',
+      target: null,
+      payload: new Uint8Array(RELAY_FRAGMENT_BYTES * 2)
+    })
+    if (!first || !second) throw new Error('Expected two fragments')
+    expect(assembler.push(first).type).toBe('partial')
+    expect(assembler.push(second).type).toBe('too-large')
+    // The assembler starts over after refusing.
+    expect(assembler.push(encodeRelayClientFrame(small)).type).toBe('frame')
   })
 })
