@@ -122,15 +122,25 @@ function cloudServer() {
     ],
     [
       'POST',
+      /^\/documents\/([^/]+)\/images\/commit$/,
+      (_match, body) => {
+        const committed = (Array.isArray(body.uploads) ? body.uploads : []) as {
+          uploadId: string
+        }[]
+        for (const { uploadId } of committed) {
+          const image = uploads.get(uploadId)?.image
+          if (image) images.set(image, uploadId)
+        }
+        return new Response(null, { status: 204 })
+      }
+    ],
+    [
+      'POST',
       /^\/uploads\/([^/]+)\/commit$/,
       ([, uploadId = ''], body) => {
         const upload = uploads.get(uploadId)
         const doc = upload ? documents.get(upload.documentId) : undefined
         if (!upload || !doc) return json({ error: { code: 'not_found' } }, 404)
-        if (upload.image) {
-          images.set(upload.image, uploadId)
-          return json({ document: summary(upload.documentId, doc) })
-        }
         const named = (Array.isArray(body.images) ? body.images : []) as Image[]
         if (named.some((image) => !images.has(image.checksum))) {
           return json({ error: { code: 'invalid_upload' } }, 422)
@@ -302,13 +312,19 @@ describe('Cloud storage adapter', () => {
         'canvas.fig': strToU8(pages),
         'meta.json': strToU8('{}'),
         'images/a1b2': photo,
-        'images/c3d4': logo
+        'images/c3d4': logo,
+        // Cloud stores apart only names it accepts; this one stays inside the file.
+        'images/old name.png': logo
       })
     const first = crypto.randomUUID()
     const saved = await storage.putDocument(first, archive('first'), { name: 'A', updatedAt: '' })
     const stored = saved.revision ? server.objects.get(saved.revision) : undefined
     if (!stored) throw new Error('Expected the stored file')
-    expect(Object.keys(unzipSync(stored)).sort()).toEqual(['canvas.fig', 'meta.json'])
+    expect(Object.keys(unzipSync(stored)).sort()).toEqual([
+      'canvas.fig',
+      'images/old name.png',
+      'meta.json'
+    ])
     expect(server.imageUploads).toHaveLength(2)
 
     // Another document with the same images uploads neither.
@@ -319,6 +335,7 @@ describe('Cloud storage adapter', () => {
     expect(strFromU8(opened['canvas.fig'] ?? new Uint8Array())).toBe('first')
     expect(opened['images/a1b2']).toEqual(photo)
     expect(opened['images/c3d4']).toEqual(logo)
+    expect(opened['images/old name.png']).toEqual(logo)
   })
 
   test('saves on top of the revision it was edited from', async () => {

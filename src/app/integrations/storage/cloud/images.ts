@@ -2,6 +2,7 @@ import { Semaphore } from 'es-toolkit'
 import { unzipSync, zipSync, type Zippable } from 'fflate'
 
 import type { CloudAPIClient } from '@open-pencil/cloud/client'
+import { CLOUD_IMAGE_NAME_PATTERN } from '@open-pencil/cloud/contract'
 
 import { putCloudObject, type CloudObjectTransfer } from './upload'
 
@@ -19,7 +20,7 @@ function isZip(bytes: Uint8Array): boolean {
 
 /**
  * The archive without its images, and the images. A file that is not a zip archive, or holds no
- * images, comes back whole.
+ * images, comes back whole; an image under a name Cloud does not store apart stays inside.
  */
 export function splitCloudDocument(bytes: Uint8Array): {
   lean: Uint8Array
@@ -31,7 +32,7 @@ export function splitCloudDocument(bytes: Uint8Array): {
   const rest: Zippable = {}
   for (const [path, data] of Object.entries(entries)) {
     const name = path.startsWith(IMAGE_ENTRY_PREFIX) ? path.slice(IMAGE_ENTRY_PREFIX.length) : null
-    if (name) images.push({ name, bytes: data })
+    if (name && CLOUD_IMAGE_NAME_PATTERN.test(name)) images.push({ name, bytes: data })
     else rest[path] = [data, { level: 0 }]
   }
   return images.length === 0 ? { lean: bytes, images } : { lean: zipSync(rest), images }
@@ -50,10 +51,10 @@ export function assembleCloudDocument(lean: Uint8Array, images: CloudDocumentIma
 
 /**
  * Uploads the images the document's workspace lacks: the server answers with uploads for those
- * only, and each is committed once its bytes are in place.
+ * only, and they are committed together once their bytes are in place.
  */
 export async function uploadCloudImages(input: {
-  cloud: Pick<CloudAPIClient, 'requestImageUploads' | 'commitUpload'>
+  cloud: Pick<CloudAPIClient, 'requestImageUploads' | 'commitImageUploads'>
   documentId: string
   images: { checksum: string; bytes: Uint8Array }[]
   objectFetch: CloudObjectTransfer['objectFetch']
@@ -64,8 +65,9 @@ export async function uploadCloudImages(input: {
   const offers = await input.cloud.requestImageUploads(input.documentId, {
     images: [...byChecksum].map(([checksum, bytes]) => ({ checksum, byteSize: bytes.byteLength }))
   })
+  if (offers.length === 0) return
   const semaphore = new Semaphore(IMAGE_UPLOAD_CONCURRENCY)
-  await Promise.all(
+  const uploaded = await Promise.all(
     offers.map(async (offer) => {
       const bytes = byChecksum.get(offer.checksum)
       if (!bytes) throw new Error('The server offered an upload for an image this save lacks')
@@ -76,10 +78,12 @@ export async function uploadCloudImages(input: {
           objectFetch: input.objectFetch,
           signal: input.signal
         })
-        await input.cloud.commitUpload(offer.uploadId, { checksum: offer.checksum, multipart })
+        return { uploadId: offer.uploadId, checksum: offer.checksum, multipart }
       } finally {
         semaphore.release()
       }
     })
   )
+  // One commit for every image, however many a save adds.
+  await input.cloud.commitImageUploads(input.documentId, uploaded)
 }

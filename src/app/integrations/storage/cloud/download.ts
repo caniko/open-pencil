@@ -12,11 +12,6 @@ export async function cloudChecksum(bytes: Uint8Array): Promise<string> {
 }
 
 type ObjectFetch = (input: string, init: RequestInit) => Promise<Response>
-type DownloadOptions = {
-  signal?: AbortSignal
-  onProgress?: (progress: StorageTransferProgress) => void
-}
-
 const IMAGE_DOWNLOAD_CONCURRENCY = 6
 
 /** An object's bytes from the store, checked against the size and checksum the server recorded. */
@@ -46,7 +41,7 @@ async function fetchVerified(
 export async function downloadCloudDocument(
   download: DocumentDownload,
   objectFetch: ObjectFetch,
-  options: DownloadOptions = {}
+  options: { signal?: AbortSignal; onProgress?: (progress: StorageTransferProgress) => void } = {}
 ): Promise<Uint8Array> {
   const totalBytes = download.byteSize + sumBy(download.images, (image) => image.byteSize)
   let transferredBytes = 0

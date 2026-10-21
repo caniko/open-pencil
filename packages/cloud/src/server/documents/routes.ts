@@ -1,4 +1,5 @@
 import {
+  parseCommitImageUploads,
   parseCommitUpload,
   parseCreateDocument,
   parseCreateUpload,
@@ -183,6 +184,19 @@ export function createDocumentRoutes(
           201
         )
       )
+    )
+    .post(
+      '/documents/:documentId/images/commit',
+      validatedJSON(parseCommitImageUploads),
+      (context) =>
+        documentResponse(context, async () => {
+          await service.commitImageUploads(
+            context.get('actor').userId,
+            context.req.param('documentId'),
+            context.req.valid('json').uploads
+          )
+          return context.body(null, 204)
+        })
     )
     .post('/documents/:documentId/images', validatedJSON(parseRequestImageUploads), (context) =>
       documentResponse(context, async () =>

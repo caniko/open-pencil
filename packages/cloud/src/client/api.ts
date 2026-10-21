@@ -25,6 +25,7 @@ import {
   type CollaborationTicket,
   type CreateInvitationContinuationInput,
   type InvitationContinuation,
+  type CommitImageUploadsInput,
   type CommitUploadRequest,
   type RequestImageUploadsInput,
   type CreateDocumentInput,
@@ -456,6 +457,17 @@ export function createCloudAPIClient(baseURL: string, options: CloudRequestOptio
         uploadResponseSchema,
         options.onDiagnostic
       )
+    },
+    /** Commits the image uploads a save asked for, once their bytes are in place. */
+    async commitImageUploads(
+      documentId: string,
+      uploads: CommitImageUploadsInput['uploads']
+    ): Promise<void> {
+      const response = await client.documents[':documentId'].images.commit.$post({
+        param: { documentId },
+        json: { uploads }
+      })
+      await responseBody(response, options.onDiagnostic)
     },
     /** Uploads for the images a save will name that the document's workspace lacks. */
     async requestImageUploads(

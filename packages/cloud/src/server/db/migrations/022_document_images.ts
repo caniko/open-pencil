@@ -37,12 +37,13 @@ export async function up(database: Kysely<unknown>): Promise<void> {
     .addColumn('workspace_id', 'uuid', (column) => column.notNull())
     .addColumn('checksum', 'text', (column) => column.notNull())
     .addPrimaryKeyConstraint('revision_image_pkey', ['revision_id', 'name'])
+    // No cascade: an image is released only once no revision uses it, and a release that raced a
+    // save fails rather than taking the revision's images with it.
     .addForeignKeyConstraint(
       'revision_image_image_fkey',
       ['workspace_id', 'checksum'],
       'workspace_image',
-      ['workspace_id', 'checksum'],
-      (constraint) => constraint.onDelete('cascade')
+      ['workspace_id', 'checksum']
     )
     .execute()
   await database.schema

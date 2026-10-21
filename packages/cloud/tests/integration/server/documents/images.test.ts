@@ -109,14 +109,15 @@ async function testApp() {
       }),
       offersSchema
     )
-    for (const offer of offers.uploads) {
-      await store(offer.uploadId)
-      const committed = await request(`/uploads/${offer.uploadId}/commit`, {
-        method: 'POST',
-        json: { checksum: offer.checksum }
-      })
-      expect(committed.status).toBe(200)
-    }
+    if (offers.uploads.length === 0) return offers.uploads
+    for (const offer of offers.uploads) await store(offer.uploadId)
+    const committed = await request(`/documents/${documentId}/images/commit`, {
+      method: 'POST',
+      json: {
+        uploads: offers.uploads.map(({ uploadId, checksum }) => ({ uploadId, checksum }))
+      }
+    })
+    expect(committed.status).toBe(204)
     return offers.uploads
   }
 
@@ -212,6 +213,24 @@ describe('Cloud document images', () => {
     try {
       const response = await context.save([photo])
       expect(response.status).toBe(422)
+      // Nor does committing images take a document's own upload.
+      const upload = await responseJSON(
+        await context.request(`/documents/${context.documentId}/uploads`, {
+          method: 'POST',
+          json: {
+            baseRevisionId: null,
+            byteSize: FILE_BYTES,
+            checksum: checksumOf('Z'),
+            contentType: OCTETS
+          }
+        }),
+        v.object({ id: v.string() })
+      )
+      const asImage = await context.request(`/documents/${context.documentId}/images/commit`, {
+        method: 'POST',
+        json: { uploads: [{ uploadId: upload.id, checksum: checksumOf('Z') }] }
+      })
+      expect(asImage.status).toBe(422)
       expect(
         await context.runtime.database.selectFrom('documentRevision').select('id').execute()
       ).toHaveLength(0)

@@ -1,4 +1,5 @@
 import type {
+  CommitImageUploadsInput,
   CommitUploadInput,
   CreateDocumentInput,
   CreateUploadInput,
@@ -33,6 +34,7 @@ import type { ObjectStore } from '#cloud/server/objects'
 import { CLOUD_FEATURE_KEYS } from '#cloud/server/policy/keys'
 import type { CloudPolicy } from '#cloud/server/policy/policy'
 import { createStorageQuotaService } from '#cloud/server/quota'
+import { uniq } from 'es-toolkit'
 import type { Kysely, Transaction } from 'kysely'
 
 const DOWNLOAD_LIFETIME_MS = 5 * 60 * 1000
@@ -249,6 +251,110 @@ export function createDocumentService(
     }
   }
 
+  async function commitUpload(
+    userId: string,
+    uploadId: string,
+    input: CommitUploadInput
+  ): Promise<DocumentSummary> {
+    const upload = await database
+      .selectFrom('upload')
+      .innerJoin('document', 'document.id', 'upload.documentId')
+      .select([
+        'upload.documentId',
+        'upload.kind',
+        'document.workspaceId',
+        'upload.baseRevisionId',
+        'upload.objectKey',
+        'upload.checksum',
+        'upload.byteSize',
+        'upload.contentType',
+        'upload.multipartUploadId',
+        'upload.status',
+        'upload.expiresAt'
+      ])
+      .where('upload.id', '=', uploadId)
+      .where('upload.createdBy', '=', userId)
+      .executeTakeFirst()
+    if (!upload) throw new DocumentNotFoundError()
+    const access = await resolveDocumentAccess(database, userId, upload.documentId)
+    if (!access) throw new DocumentNotFoundError()
+    if (!canEditDocument(access)) throw new DocumentForbiddenError()
+    if (input.checksum !== upload.checksum) throw new UploadInvalidError()
+    if (upload.status === 'committed') {
+      const document = await findDocument(database, userId, upload.documentId)
+      if (!document) throw new DocumentNotFoundError()
+      return document
+    }
+    if (upload.status !== 'pending' || new Date(upload.expiresAt).getTime() <= Date.now()) {
+      throw new UploadInvalidError()
+    }
+    const claimed = await database
+      .updateTable('upload')
+      .set({ status: 'finalizing', finalizationStartedAt: new Date() })
+      .where('id', '=', uploadId)
+      .where('status', '=', 'pending')
+      .returning('id')
+      .executeTakeFirst()
+    if (!claimed) throw new UploadInvalidError()
+    let checkpointed = false
+    try {
+      if (input.multipart) {
+        if (
+          !objects.capabilities.multipartUpload ||
+          input.multipart.uploadId !== upload.multipartUploadId
+        ) {
+          throw new UploadInvalidError()
+        }
+        await objects.completeUpload({
+          key: upload.objectKey,
+          uploadId: input.multipart.uploadId,
+          parts: input.multipart.parts
+        })
+      }
+      const stored = await objects.head(upload.objectKey)
+      if (!stored || !matchesUpload(stored, upload)) throw new UploadInvalidError()
+
+      if (upload.kind === 'image') {
+        await database.transaction().execute((transaction) =>
+          images.landInTransaction(transaction, {
+            uploadId,
+            workspaceId: upload.workspaceId,
+            objectKey: upload.objectKey,
+            stored
+          })
+        )
+        const document = await findDocument(database, userId, upload.documentId)
+        if (!document) throw new DocumentNotFoundError()
+        return document
+      }
+      const revisionId = crypto.randomUUID()
+      const storageObjectId = crypto.randomUUID()
+      checkpointed = await database.transaction().execute((transaction) =>
+        landRevision(transaction, {
+          userId,
+          uploadId,
+          upload,
+          stored,
+          revisionId,
+          storageObjectId,
+          images: input.images
+        })
+      )
+    } catch (error) {
+      await database
+        .updateTable('upload')
+        .set({ status: 'pending', finalizationStartedAt: null })
+        .where('id', '=', uploadId)
+        .where('status', '=', 'finalizing')
+        .execute()
+      throw error
+    }
+    if (checkpointed) announceVersions(options.onVersionsChanged, upload.documentId)
+    const document = await findDocument(database, userId, upload.documentId)
+    if (!document) throw new DocumentNotFoundError()
+    return document
+  }
+
   return {
     async cleanupExpiredUploads(now = new Date()): Promise<number> {
       const result = await cleanup.cleanupExpiredUploads({
@@ -457,109 +563,35 @@ export function createDocumentService(
         })
       }
     },
+    commitUpload,
 
-    async commitUpload(
+    /**
+     * Commits the image uploads a save asked for in one request, however many there are: each
+     * must be an image upload this person made for the document.
+     */
+    async commitImageUploads(
       userId: string,
-      uploadId: string,
-      input: CommitUploadInput
-    ): Promise<DocumentSummary> {
-      const upload = await database
+      documentId: string,
+      uploads: CommitImageUploadsInput['uploads']
+    ): Promise<void> {
+      const ids = uniq(uploads.map((upload) => upload.uploadId))
+      const rows = await database
         .selectFrom('upload')
-        .innerJoin('document', 'document.id', 'upload.documentId')
-        .select([
-          'upload.documentId',
-          'upload.kind',
-          'document.workspaceId',
-          'upload.baseRevisionId',
-          'upload.objectKey',
-          'upload.checksum',
-          'upload.byteSize',
-          'upload.contentType',
-          'upload.multipartUploadId',
-          'upload.status',
-          'upload.expiresAt'
-        ])
-        .where('upload.id', '=', uploadId)
-        .where('upload.createdBy', '=', userId)
-        .executeTakeFirst()
-      if (!upload) throw new DocumentNotFoundError()
-      const access = await resolveDocumentAccess(database, userId, upload.documentId)
-      if (!access) throw new DocumentNotFoundError()
-      if (!canEditDocument(access)) throw new DocumentForbiddenError()
-      if (input.checksum !== upload.checksum) throw new UploadInvalidError()
-      if (upload.status === 'committed') {
-        const document = await findDocument(database, userId, upload.documentId)
-        if (!document) throw new DocumentNotFoundError()
-        return document
-      }
-      if (upload.status !== 'pending' || new Date(upload.expiresAt).getTime() <= Date.now()) {
+        .select(['id', 'kind'])
+        .where('id', 'in', ids)
+        .where('documentId', '=', documentId)
+        .where('createdBy', '=', userId)
+        .execute()
+      if (rows.length !== ids.length || rows.some((row) => row.kind !== 'image')) {
         throw new UploadInvalidError()
       }
-      const claimed = await database
-        .updateTable('upload')
-        .set({ status: 'finalizing', finalizationStartedAt: new Date() })
-        .where('id', '=', uploadId)
-        .where('status', '=', 'pending')
-        .returning('id')
-        .executeTakeFirst()
-      if (!claimed) throw new UploadInvalidError()
-      let checkpointed = false
-      try {
-        if (input.multipart) {
-          if (
-            !objects.capabilities.multipartUpload ||
-            input.multipart.uploadId !== upload.multipartUploadId
-          ) {
-            throw new UploadInvalidError()
-          }
-          await objects.completeUpload({
-            key: upload.objectKey,
-            uploadId: input.multipart.uploadId,
-            parts: input.multipart.parts
-          })
-        }
-        const stored = await objects.head(upload.objectKey)
-        if (!stored || !matchesUpload(stored, upload)) throw new UploadInvalidError()
-
-        if (upload.kind === 'image') {
-          await database.transaction().execute((transaction) =>
-            images.landInTransaction(transaction, {
-              uploadId,
-              workspaceId: upload.workspaceId,
-              objectKey: upload.objectKey,
-              stored
-            })
-          )
-          const document = await findDocument(database, userId, upload.documentId)
-          if (!document) throw new DocumentNotFoundError()
-          return document
-        }
-        const revisionId = crypto.randomUUID()
-        const storageObjectId = crypto.randomUUID()
-        checkpointed = await database.transaction().execute((transaction) =>
-          landRevision(transaction, {
-            userId,
-            uploadId,
-            upload,
-            stored,
-            revisionId,
-            storageObjectId,
-            images: input.images
-          })
-        )
-      } catch (error) {
-        await database
-          .updateTable('upload')
-          .set({ status: 'pending', finalizationStartedAt: null })
-          .where('id', '=', uploadId)
-          .where('status', '=', 'finalizing')
-          .execute()
-        throw error
+      for (const upload of uploads) {
+        await commitUpload(userId, upload.uploadId, {
+          checksum: upload.checksum,
+          multipart: upload.multipart,
+          images: []
+        })
       }
-      if (checkpointed) announceVersions(options.onVersionsChanged, upload.documentId)
-      const document = await findDocument(database, userId, upload.documentId)
-      if (!document) throw new DocumentNotFoundError()
-      return document
     }
   }
 }

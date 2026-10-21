@@ -25,10 +25,12 @@ export {
   type CloudListing
 } from './discovery'
 export {
+  CLOUD_IMAGE_NAME_PATTERN,
   CLOUD_MAX_DOCUMENT_IMAGES,
   CLOUD_PROTOCOL_MAX_UPLOAD_BYTES,
   cloudActorSchema,
   cloudSessionSchema,
+  commitImageUploadsSchema,
   commitUploadSchema,
   createDocumentSchema,
   createUploadSchema,
@@ -41,6 +43,7 @@ export {
   sharedDocumentSchema,
   type SharedDocument,
   workspaceUsageSchema,
+  parseCommitImageUploads,
   parseCommitUpload,
   parseCreateDocument,
   parseCreateUpload,
@@ -48,6 +51,7 @@ export {
   requestImageUploadsSchema,
   type CloudActorContract,
   type CloudSession,
+  type CommitImageUploadsInput,
   type CommitUploadInput,
   type CommitUploadRequest,
   type CreateDocumentInput,

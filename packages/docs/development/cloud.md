@@ -50,7 +50,8 @@ revision has its own object key.
   revision leaves them out of its file: it lists the images it uses under the names the file gives
   them, and a download returns a link for each. Before a save the client asks which of its images
   the workspace lacks and uploads only those, each as an upload of its own kind with its own
-  reservation and commit; asking renews the images the workspace holds. A save that names an image
+  reservation, committed together in one request; asking renews the images the workspace holds.
+  An image under a name Cloud does not accept stays inside the file. A save that names an image
   the workspace does not hold is refused. Keying by the verified checksum, with names kept per
   revision, means bytes uploaded under the wrong name can only reach the revision that named them.
 - Restoring or duplicating a version gives the new revision the same images. Compaction releases an

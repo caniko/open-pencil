@@ -213,13 +213,18 @@ export function createRevisionCompactionService(
         }
       }
       // Compaction just freed the images of the saves it deleted; the release lets their grace pass.
-      const images = await releaseUnusedImages(
-        database,
-        new Date(now.getTime() - IMAGE_RELEASE_GRACE_MS),
-        input.batchSize
-      )
-      result.imagesReleased = images.released
-      result.bytesReclaimed += images.bytes
+      // A release that raced a save referring to an image fails whole and is tried next time.
+      try {
+        const images = await releaseUnusedImages(
+          database,
+          new Date(now.getTime() - IMAGE_RELEASE_GRACE_MS),
+          input.batchSize
+        )
+        result.imagesReleased = images.released
+        result.bytesReclaimed += images.bytes
+      } catch {
+        result.failed++
+      }
       await sweepObjects(input.batchSize, result)
       return result
     }

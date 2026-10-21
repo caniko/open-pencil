@@ -7,8 +7,12 @@ const checksumSchema = v.pipe(v.string(), v.regex(/^[A-Za-z0-9+/]{43}=$/))
 /** The most images one revision, or one request for image uploads, may name. */
 export const CLOUD_MAX_DOCUMENT_IMAGES = 10_000
 
-/** An image's name inside a `.fig` file: the SHA-1 Figma names it by, or an older name. */
-const imageNameSchema = v.pipe(v.string(), v.regex(/^[A-Za-z0-9._-]{1,128}$/))
+/**
+ * An image's name inside a `.fig` file that Cloud stores apart from it: the SHA-1 Figma names it
+ * by, or an older plain name. A client leaves images under other names inside the file.
+ */
+export const CLOUD_IMAGE_NAME_PATTERN = /^[A-Za-z0-9._-]{1,128}$/
+const imageNameSchema = v.pipe(v.string(), v.regex(CLOUD_IMAGE_NAME_PATTERN))
 
 const objectDownloadSchema = v.object({
   url: v.pipe(v.string(), v.url()),
@@ -148,6 +152,22 @@ export const commitUploadSchema = v.object({
   )
 })
 export type CommitUploadInput = v.InferOutput<typeof commitUploadSchema>
+
+/** The image uploads a save asked for, committed together once their bytes are in place. */
+export const commitImageUploadsSchema = v.object({
+  uploads: v.pipe(
+    v.array(
+      v.object({
+        uploadId: v.pipe(v.string(), v.uuid()),
+        checksum: checksumSchema,
+        multipart: commitUploadSchema.entries.multipart
+      })
+    ),
+    v.minLength(1),
+    v.maxLength(CLOUD_MAX_DOCUMENT_IMAGES)
+  )
+})
+export type CommitImageUploadsInput = v.InferOutput<typeof commitImageUploadsSchema>
 /** A commit as a client sends it, which may leave out the images a whole file holds itself. */
 export type CommitUploadRequest = v.InferInput<typeof commitUploadSchema>
 
@@ -161,6 +181,10 @@ export function parseCreateUpload(input: unknown): CreateUploadInput {
 
 export function parseRequestImageUploads(input: unknown): RequestImageUploadsInput {
   return v.parse(requestImageUploadsSchema, input)
+}
+
+export function parseCommitImageUploads(input: unknown): CommitImageUploadsInput {
+  return v.parse(commitImageUploadsSchema, input)
 }
 
 export function parseCommitUpload(input: unknown): CommitUploadInput {
