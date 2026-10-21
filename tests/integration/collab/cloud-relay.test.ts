@@ -313,6 +313,41 @@ describe('Cloud document rooms, another room first', () => {
   })
 })
 
+describe('Cloud document rooms, opening', () => {
+  test('a tab whose layers the room holds as they are gets no updates and stays saved', async () => {
+    const relay = await startRelay()
+    const documentId = crypto.randomUUID()
+    const roomId = `cloud:${documentId}:0`
+    const [grace, ada] = await openedTwice()
+    const first = openCloudDocumentRoom(grace, {
+      roomId,
+      transport: relay.join(documentId, 'Grace', 'edit', 'user'),
+      permission: 'edit'
+    })
+    cleanups.push(() => {
+      first.stop()
+      first.session.dispose()
+    })
+    await until(() => first.session.roomHasDocument())
+    await until(() => ada.state.preparation === null)
+    // The room replays every layer to a newcomer; layers that already read the same are no edit.
+    const updated: string[] = []
+    ada.onEditorEvent('node:updated', (id) => updated.push(id))
+    const second = openCloudDocumentRoom(ada, {
+      roomId,
+      transport: relay.join(documentId, 'Ada', 'edit', 'user'),
+      permission: 'edit'
+    })
+    cleanups.push(() => {
+      second.stop()
+      second.session.dispose()
+    })
+    await until(() => second.session.hasDocument.value && second.session.peers.value.length > 0)
+    expect(updated).toEqual([])
+    expect(ada.hasUnsavedChanges()).toBe(false)
+  })
+})
+
 /** Tabs that each opened the same stored file, which gives each its own root. */
 async function openedTwice() {
   await initCodec()
