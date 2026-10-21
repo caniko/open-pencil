@@ -54,4 +54,33 @@ describe('shape with text size', () => {
     computeAllLayouts(graph, id)
     expect(getNodeOrThrow(graph, id).height).toBe(176)
   })
+
+  test('a long label grows the shape taller only, as FigJam grows it', () => {
+    const graph = new SceneGraph()
+    const id = drawnShape(graph, 'Internationalisation in a label')
+    // The 372 px line is wider than the 144 px label box, so it wraps, and the shape stays 176 wide.
+    expect(getNodeOrThrow(graph, id).width).toBe(176)
+  })
+
+  test('a shape whose height was set keeps it and cuts its label off', () => {
+    const graph = new SceneGraph()
+    const id = drawnShape(graph)
+    graph.updateNode(id, { height: 120 })
+    const label = shapeWithTextLabel(graph, getNodeOrThrow(graph, id))
+    if (!label) throw new Error('shape has no label')
+    graph.updateNode(label.id, { text: Array.from({ length: 8 }, () => 'line').join('\n') })
+    computeAllLayouts(graph, id)
+    expect(getNodeOrThrow(graph, id)).toMatchObject({ height: 120, shapeTruncates: true })
+    // Cut to the 88 px label box, which the renderer fills with whole lines and "…".
+    expect(getNodeOrThrow(graph, label.id)).toMatchObject({
+      textTruncation: 'ENDING',
+      height: 88
+    })
+    graph.updateNode(label.id, { text: 'Hi' })
+    computeAllLayouts(graph, id)
+    expect(getNodeOrThrow(graph, label.id)).toMatchObject({
+      textTruncation: 'DISABLED',
+      textAutoResize: 'HEIGHT'
+    })
+  })
 })
