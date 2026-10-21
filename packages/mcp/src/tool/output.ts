@@ -216,12 +216,34 @@ export async function resolveSafePath(filePath: string, root: string): Promise<S
   return resolveSafePathInternal(filePath, root, 0)
 }
 
+/**
+ * The tools whose `path` names a file to write their result to, and the bytes each writes. Other
+ * tools' `path` is their own data, such as `create_vector`'s SVG path, and never touches disk.
+ */
+const FILE_OUTPUTS: Record<
+  string,
+  (result: Record<string, unknown>) => string | Uint8Array | null
+> = {
+  export_svg: (result) => (typeof result.svg === 'string' ? result.svg : null),
+  get_jsx: (result) => (typeof result.jsx === 'string' ? result.jsx : null),
+  export_image: (result) =>
+    typeof result.base64 === 'string' ? toUint8Array(result.base64) : null,
+  export_pdf: (result) => (typeof result.base64 === 'string' ? toUint8Array(result.base64) : null)
+}
+
+/** Whether a tool's `path` argument names a file it writes, rather than data of its own. */
+export function writesFileOutput(toolName: string): boolean {
+  return toolName in FILE_OUTPUTS
+}
+
 export async function writeToolOutput(
   toolName: string,
   result: Record<string, unknown>,
   filePath: string,
   root: string
 ): Promise<MCPResult | null> {
+  const content = FILE_OUTPUTS[toolName]?.(result)
+  if (content == null) return null
   const { resolved, realPath } = await resolveSafePath(filePath, root)
   // Use the canonical realPath for filesystem operations to prevent TOCTOU:
   // an attacker could swap a directory component with a symlink between
@@ -234,21 +256,9 @@ export async function writeToolOutput(
   // with a symlink between resolveSafePath and the write would be detected
   // here — realpath follows the ancestor symlink and resolves outside root.
   await resolveSafePath(parentDir, root)
-  if (toolName === 'export_svg' && typeof result.svg === 'string') {
-    await writeFile(realPath, result.svg, 'utf8')
-    await resolveSafePath(realPath, root)
-    return ok({ written: resolved, byteLength: Buffer.byteLength(result.svg, 'utf8') })
-  }
-  if (toolName === 'export_image' && typeof result.base64 === 'string') {
-    const bytes = toUint8Array(result.base64)
-    await writeFile(realPath, bytes)
-    await resolveSafePath(realPath, root)
-    return ok({ written: resolved, byteLength: bytes.length })
-  }
-  if (toolName === 'get_jsx' && typeof result.jsx === 'string') {
-    await writeFile(realPath, result.jsx, 'utf8')
-    await resolveSafePath(realPath, root)
-    return ok({ written: resolved, byteLength: Buffer.byteLength(result.jsx, 'utf8') })
-  }
-  return null
+  await writeFile(realPath, content)
+  await resolveSafePath(realPath, root)
+  const byteLength =
+    typeof content === 'string' ? Buffer.byteLength(content, 'utf8') : content.byteLength
+  return ok({ written: resolved, byteLength })
 }
