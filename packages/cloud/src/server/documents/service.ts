@@ -4,6 +4,7 @@ import type {
   CreateUploadInput,
   DocumentDownload,
   DocumentSummary,
+  RequestImageUploadsInput,
   SharedDocument
 } from '#cloud/contract'
 import { createUploadCleanupService } from '#cloud/server/cleanup'
@@ -13,6 +14,11 @@ import {
   canEditDocument,
   resolveDocumentAccess
 } from '#cloud/server/documents/access'
+import {
+  createDocumentImages,
+  revisionImageDownloads,
+  type ImageUploadOffer
+} from '#cloud/server/documents/images'
 import {
   findDocument,
   insertDocument,
@@ -72,6 +78,50 @@ export function createDocumentService(
 ) {
   const cleanup = createUploadCleanupService(database, objects)
   const quota = createStorageQuotaService(database)
+  const images = createDocumentImages(database, objects, quota)
+
+  /**
+   * The document `userId` may write to, and how large one file and the workspace's storage may
+   * be for this save: technical limits, tightened by policy.
+   */
+  async function writableDocument(userId: string, documentId: string) {
+    const access = await resolveDocumentAccess(database, userId, documentId)
+    if (!access) throw new DocumentNotFoundError()
+    if (!canEditDocument(access)) throw new DocumentForbiddenError()
+    const document = await findDocument(database, userId, documentId)
+    if (!document) throw new DocumentNotFoundError()
+    const policyContext = {
+      targetingKey: document.workspaceId,
+      actorId: userId,
+      workspaceId: document.workspaceId,
+      documentId,
+      deploymentMode: 'self-hosted' as const
+    }
+    const technicalMaximum = options.technicalMaximumUploadBytes ?? Number.MAX_SAFE_INTEGER
+    const maximumFileBytes = Math.min(
+      technicalMaximum,
+      options.policy
+        ? await options.policy.number(
+            CLOUD_FEATURE_KEYS.maximumFileBytes,
+            technicalMaximum,
+            policyContext
+          )
+        : technicalMaximum
+    )
+    const maximumStorageBytes = options.policy
+      ? await options.policy.number(
+          'cloud.storage.maximum-bytes',
+          Number.MAX_SAFE_INTEGER,
+          policyContext
+        )
+      : Number.MAX_SAFE_INTEGER
+    return {
+      document,
+      maximumFileBytes,
+      maximumStorageBytes:
+        maximumStorageBytes === Number.MAX_SAFE_INTEGER ? null : maximumStorageBytes
+    }
+  }
 
   /**
    * Makes a committed upload the document's current revision, unless it already was, and records
@@ -85,14 +135,21 @@ export function createDocumentService(
       upload,
       stored,
       revisionId,
-      storageObjectId
+      storageObjectId,
+      images: revisionImages
     }: {
       userId: string
       uploadId: string
-      upload: { documentId: string; baseRevisionId: string | null; objectKey: string }
+      upload: {
+        documentId: string
+        workspaceId: string
+        baseRevisionId: string | null
+        objectKey: string
+      }
       stored: { checksum: string; byteSize: number; contentType: string }
       revisionId: string
       storageObjectId: string
+      images: CommitUploadInput['images']
     }
   ): Promise<boolean> {
     const lockedUpload = await transaction
@@ -132,6 +189,12 @@ export function createDocumentService(
         createdBy: userId
       })
       .execute()
+    const attached = await images.attachInTransaction(transaction, {
+      workspaceId: upload.workspaceId,
+      revisionId,
+      images: revisionImages
+    })
+    if (!attached) throw new UploadInvalidError()
     await transaction
       .updateTable('document')
       .set({
@@ -174,16 +237,15 @@ export function createDocumentService(
       .where('documentRevision.documentId', '=', documentId)
       .executeTakeFirst()
     if (!revision) throw new DocumentNotFoundError()
+    const expiresAt = new Date(Date.now() + DOWNLOAD_LIFETIME_MS)
     return {
       document,
       revisionId: revision.revisionId,
       byteSize: Number(revision.byteSize),
       checksum: revision.checksum,
       contentType: revision.contentType,
-      download: await objects.createDownload({
-        key: revision.objectKey,
-        expiresAt: new Date(Date.now() + DOWNLOAD_LIFETIME_MS)
-      })
+      download: await objects.createDownload({ key: revision.objectKey, expiresAt }),
+      images: await revisionImageDownloads(database, objects, revision.revisionId, expiresAt)
     }
   }
 
@@ -223,9 +285,32 @@ export function createDocumentService(
         .where('document.workspaceId', '=', workspaceId)
         .where('document.deletedAt', 'is', null)
         .executeTakeFirstOrThrow()
+      // Images current revisions use, each counted once however many documents share it.
+      const shared = await database
+        .selectFrom('workspaceImage')
+        .innerJoin('storageObject', 'storageObject.id', 'workspaceImage.storageObjectId')
+        .select((expression) => [
+          expression.fn.count('storageObject.id').as('objectCount'),
+          expression.fn
+            .coalesce(expression.fn.sum('storageObject.byteSize'), expression.val(0))
+            .as('bytesUsed')
+        ])
+        .where('workspaceImage.workspaceId', '=', workspaceId)
+        .where((expression) =>
+          expression.exists(
+            expression
+              .selectFrom('revisionImage')
+              .innerJoin('document', 'document.currentRevisionId', 'revisionImage.revisionId')
+              .select('revisionImage.name')
+              .whereRef('revisionImage.workspaceId', '=', 'workspaceImage.workspaceId')
+              .whereRef('revisionImage.checksum', '=', 'workspaceImage.checksum')
+              .where('document.deletedAt', 'is', null)
+          )
+        )
+        .executeTakeFirstOrThrow()
       return {
-        bytesUsed: Number(result.bytesUsed),
-        objectCount: Number(result.objectCount),
+        bytesUsed: Number(result.bytesUsed) + Number(shared.bytesUsed),
+        objectCount: Number(result.objectCount) + Number(shared.objectCount),
         documentCount: Number(result.documentCount)
       }
     },
@@ -285,37 +370,12 @@ export function createDocumentService(
       documentId: string,
       input: CreateUploadInput
     ): Promise<CreateDocumentUploadResult> {
-      const access = await resolveDocumentAccess(database, userId, documentId)
-      if (!access) throw new DocumentNotFoundError()
-      if (!canEditDocument(access)) throw new DocumentForbiddenError()
-      const document = await findDocument(database, userId, documentId)
-      if (!document) throw new DocumentNotFoundError()
+      const { document, maximumFileBytes, maximumStorageBytes } = await writableDocument(
+        userId,
+        documentId
+      )
       if (document.currentRevisionId !== input.baseRevisionId) throw new DocumentConflictError()
-      const policyContext = {
-        targetingKey: document.workspaceId,
-        actorId: userId,
-        workspaceId: document.workspaceId,
-        documentId,
-        deploymentMode: 'self-hosted' as const
-      }
-      const technicalMaximum = options.technicalMaximumUploadBytes ?? Number.MAX_SAFE_INTEGER
-      const entitlementMaximum = options.policy
-        ? await options.policy.number(
-            CLOUD_FEATURE_KEYS.maximumFileBytes,
-            technicalMaximum,
-            policyContext
-          )
-        : technicalMaximum
-      if (input.byteSize > Math.min(technicalMaximum, entitlementMaximum)) {
-        throw new UploadInvalidError()
-      }
-      const maximumStorageBytes = options.policy
-        ? await options.policy.number(
-            'cloud.storage.maximum-bytes',
-            Number.MAX_SAFE_INTEGER,
-            policyContext
-          )
-        : Number.MAX_SAFE_INTEGER
+      if (input.byteSize > maximumFileBytes) throw new UploadInvalidError()
       const uploadId = crypto.randomUUID()
       const objectKey = `documents/${document.workspaceId}/${documentId}/uploads/${uploadId}.fig`
       const expiresAt = new Date(Date.now() + UPLOAD_LIFETIME_MS)
@@ -342,7 +402,7 @@ export function createDocumentService(
           uploadId,
           bytes: input.byteSize,
           expiresAt,
-          maximumBytes: maximumStorageBytes === Number.MAX_SAFE_INTEGER ? null : maximumStorageBytes
+          maximumBytes: maximumStorageBytes
         })
       })
       let objectUpload
@@ -373,6 +433,31 @@ export function createDocumentService(
       return { id: uploadId, upload: objectUpload }
     },
 
+    /** Uploads for the images a save of the document will name that its workspace lacks. */
+    async requestImageUploads(
+      userId: string,
+      documentId: string,
+      input: RequestImageUploadsInput
+    ): Promise<{ uploads: ImageUploadOffer[] }> {
+      const { document, maximumFileBytes, maximumStorageBytes } = await writableDocument(
+        userId,
+        documentId
+      )
+      if (input.images.some((image) => image.byteSize > maximumFileBytes)) {
+        throw new UploadInvalidError()
+      }
+      return {
+        uploads: await images.requestUploads({
+          userId,
+          documentId,
+          workspaceId: document.workspaceId,
+          images: input.images,
+          expiresAt: new Date(Date.now() + UPLOAD_LIFETIME_MS),
+          maximumBytes: maximumStorageBytes
+        })
+      }
+    },
+
     async commitUpload(
       userId: string,
       uploadId: string,
@@ -383,6 +468,8 @@ export function createDocumentService(
         .innerJoin('document', 'document.id', 'upload.documentId')
         .select([
           'upload.documentId',
+          'upload.kind',
+          'document.workspaceId',
           'upload.baseRevisionId',
           'upload.objectKey',
           'upload.checksum',
@@ -434,6 +521,19 @@ export function createDocumentService(
         const stored = await objects.head(upload.objectKey)
         if (!stored || !matchesUpload(stored, upload)) throw new UploadInvalidError()
 
+        if (upload.kind === 'image') {
+          await database.transaction().execute((transaction) =>
+            images.landInTransaction(transaction, {
+              uploadId,
+              workspaceId: upload.workspaceId,
+              objectKey: upload.objectKey,
+              stored
+            })
+          )
+          const document = await findDocument(database, userId, upload.documentId)
+          if (!document) throw new DocumentNotFoundError()
+          return document
+        }
         const revisionId = crypto.randomUUID()
         const storageObjectId = crypto.randomUUID()
         checkpointed = await database.transaction().execute((transaction) =>
@@ -443,7 +543,8 @@ export function createDocumentService(
             upload,
             stored,
             revisionId,
-            storageObjectId
+            storageObjectId,
+            images: input.images
           })
         )
       } catch (error) {

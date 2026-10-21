@@ -1,4 +1,9 @@
-import { parseCommitUpload, parseCreateDocument, parseCreateUpload } from '#cloud/contract'
+import {
+  parseCommitUpload,
+  parseCreateDocument,
+  parseCreateUpload,
+  parseRequestImageUploads
+} from '#cloud/contract'
 import type { CloudActor } from '#cloud/server/auth'
 import type { CloudDatabase } from '#cloud/server/db'
 import type { DocumentService } from '#cloud/server/documents/service'
@@ -54,6 +59,16 @@ export function createDocumentRoutes(
         CLOUD_RATE_LIMITS.documentCreation,
         (context) => context.req.method !== 'POST',
         (context) => context.req.param('workspaceId') ?? 'unknown'
+      )
+    )
+    router.use(
+      '/documents/:documentId/images',
+      createActorRateLimiter(
+        rateLimit.database,
+        rateLimit.secret,
+        CLOUD_RATE_LIMITS.uploadCreation,
+        (context) => context.req.method !== 'POST',
+        (context) => context.req.param('documentId') ?? 'unknown'
       )
     )
     router.use(
@@ -157,6 +172,24 @@ export function createDocumentRoutes(
         throw error
       }
     })
+    .post(
+      '/documents/:documentId/images',
+      validatedJSON(parseRequestImageUploads),
+      async (context) => {
+        try {
+          const result = await service.requestImageUploads(
+            context.get('actor').userId,
+            context.req.param('documentId'),
+            context.req.valid('json')
+          )
+          return context.json(result, 201)
+        } catch (error) {
+          const response = documentDomainError(context, error)
+          if (response) return response
+          throw error
+        }
+      }
+    )
     .post('/uploads/:uploadId/commit', validatedJSON(parseCommitUpload), async (context) => {
       try {
         const document = await service.commitUpload(

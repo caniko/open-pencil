@@ -25,6 +25,7 @@ export {
   type CloudListing
 } from './discovery'
 export {
+  CLOUD_MAX_DOCUMENT_IMAGES,
   CLOUD_PROTOCOL_MAX_UPLOAD_BYTES,
   cloudActorSchema,
   cloudSessionSchema,
@@ -34,6 +35,7 @@ export {
   documentAccessSchema,
   documentAccessSourceSchema,
   documentDownloadSchema,
+  documentImageDownloadSchema,
   documentPermissionSchema,
   documentSummarySchema,
   sharedDocumentSchema,
@@ -42,16 +44,21 @@ export {
   parseCommitUpload,
   parseCreateDocument,
   parseCreateUpload,
+  parseRequestImageUploads,
+  requestImageUploadsSchema,
   type CloudActorContract,
   type CloudSession,
   type CommitUploadInput,
+  type CommitUploadRequest,
   type CreateDocumentInput,
   type CreateUploadInput,
   type DocumentAccess,
   type DocumentAccessSource,
   type DocumentDownload,
+  type DocumentImageDownload,
   type DocumentPermission,
   type DocumentSummary,
+  type RequestImageUploadsInput,
   type WorkspaceUsage
 } from './documents'
 export {
