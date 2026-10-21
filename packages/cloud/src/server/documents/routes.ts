@@ -45,6 +45,20 @@ export function documentDomainError(context: Context, error: unknown): Response 
   return null
 }
 
+/** Answers with what `respond` gives, or with the response a document domain error stands for. */
+async function documentResponse<T extends Response>(
+  context: Context,
+  respond: () => Promise<T>
+): Promise<T | Response> {
+  try {
+    return await respond()
+  } catch (error) {
+    const response = documentDomainError(context, error)
+    if (response) return response
+    throw error
+  }
+}
+
 export function createDocumentRoutes(
   service: DocumentService,
   rateLimit?: { database: Kysely<CloudDatabase>; secret: string }
@@ -158,37 +172,29 @@ export function createDocumentRoutes(
         throw error
       }
     })
-    .post('/documents/:documentId/uploads', validatedJSON(parseCreateUpload), async (context) => {
-      try {
-        const result = await service.createUpload(
-          context.get('actor').userId,
-          context.req.param('documentId'),
-          context.req.valid('json')
-        )
-        return context.json(result, 201)
-      } catch (error) {
-        const response = documentDomainError(context, error)
-        if (response) return response
-        throw error
-      }
-    })
-    .post(
-      '/documents/:documentId/images',
-      validatedJSON(parseRequestImageUploads),
-      async (context) => {
-        try {
-          const result = await service.requestImageUploads(
+    .post('/documents/:documentId/uploads', validatedJSON(parseCreateUpload), (context) =>
+      documentResponse(context, async () =>
+        context.json(
+          await service.createUpload(
             context.get('actor').userId,
             context.req.param('documentId'),
             context.req.valid('json')
-          )
-          return context.json(result, 201)
-        } catch (error) {
-          const response = documentDomainError(context, error)
-          if (response) return response
-          throw error
-        }
-      }
+          ),
+          201
+        )
+      )
+    )
+    .post('/documents/:documentId/images', validatedJSON(parseRequestImageUploads), (context) =>
+      documentResponse(context, async () =>
+        context.json(
+          await service.requestImageUploads(
+            context.get('actor').userId,
+            context.req.param('documentId'),
+            context.req.valid('json')
+          ),
+          201
+        )
+      )
     )
     .post('/uploads/:uploadId/commit', validatedJSON(parseCommitUpload), async (context) => {
       try {
