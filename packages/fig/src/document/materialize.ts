@@ -2,6 +2,7 @@ import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
 import { guidToString } from '@open-pencil/kiwi/fig/guid'
 import {
   generateId,
+  OPEN_PENCIL_PLUGIN_DATA,
   remapStyleRunReferences,
   SceneGraph,
   type SceneNode
@@ -24,6 +25,7 @@ import {
 } from '../instance-overrides/source-children'
 import { nodeChangeToProps } from '../node-change'
 import { generatedFrameCodec } from '../node-change/generated/codecs'
+import { readNodeChangePluginData } from '../node-change/plugin-data'
 import { figArchiveRecordInfo, type FigArchiveRecordInfo } from '../record-patch'
 import { applyDocumentLayoutBindings } from './bindings/layout'
 import { applyDocumentPaintBindings } from './bindings/paint'
@@ -275,6 +277,16 @@ function createImportedGraph(
   return { graph, nextImportedId: counter.nextImportedId }
 }
 
+/**
+ * The root's id: the one OpenPencil saved it under, or else the document record's GUID, which
+ * Figma always saves as `0:0`.
+ */
+function documentRootId(document: NodeChange, recordIds: ReadonlySet<string>): string | undefined {
+  const saved = readNodeChangePluginData(document, OPEN_PENCIL_PLUGIN_DATA.documentId)
+  if (saved && !recordIds.has(saved)) return saved
+  return document.guid && guidToString(document.guid)
+}
+
 function createAssemblyState(
   reader: ReturnType<typeof createDocumentReader>,
   options: DocumentAssemblyOptions
@@ -284,7 +296,7 @@ function createAssemblyState(
   // created in a previously imported graph.
   const document = reader.documentRecord
   const { recordIds } = reader
-  const imported = createImportedGraph(document?.guid && guidToString(document.guid), recordIds)
+  const imported = createImportedGraph(document && documentRootId(document, recordIds), recordIds)
   const { graph } = imported
   const state: AssemblyState = {
     graph,

@@ -29,7 +29,8 @@ describe('.fig layer ids', () => {
 
     expect(layerIds(reopened)).toEqual(before)
     expect(reopened.getNode(added.id)?.name).toBe('Added')
-    expect(reopened.rootId).toBe(opened.rootId)
+    expect(opened.rootId).toBe(source.rootId)
+    expect(reopened.rootId).toBe(source.rootId)
   })
 
   test('every open of the same file gives every layer the same id, inside instances too', async () => {
