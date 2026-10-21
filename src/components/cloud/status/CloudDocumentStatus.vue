@@ -55,15 +55,15 @@ function act(action: 'share' | 'openWorkspace' | 'resolve' | 'retry' | 'rejoin')
 }
 const showsNotLive = computed(() => notLive && state !== 'conflict' && state !== 'error')
 const syncAttribute = computed(() => {
-  if (viewOnly) return 'view'
-  return showsNotLive.value ? 'not-live' : state
+  if (showsNotLive.value) return 'not-live'
+  return viewOnly ? 'view' : state
 })
 const popover = usePopoverUI({ content: 'w-72 p-3' })
 const t = useCloudMessages()
 const summary = computed(() => {
   const m = t.value
-  if (viewOnly) return { label: m.viewOnly, detail: m.statusViewOnlyDetail }
   if (showsNotLive.value) return { label: m.statusNotLive, detail: m.statusNotLiveDetail }
+  if (viewOnly) return { label: m.viewOnly, detail: m.statusViewOnlyDetail }
   const summaries: Record<CloudSyncState, { label: string; detail: string }> = {
     synced: {
       label: m.statusSavedTo({ workspace }),
@@ -87,8 +87,8 @@ const summary = computed(() => {
         :data-state-sync="syncAttribute"
         :aria-label="summary.label"
       >
-        <icon-lucide-eye v-if="viewOnly" class="size-3.5" />
-        <icon-lucide-unplug v-else-if="showsNotLive" class="size-3.5" />
+        <icon-lucide-unplug v-if="showsNotLive" class="size-3.5" />
+        <icon-lucide-eye v-else-if="viewOnly" class="size-3.5" />
         <icon-lucide-cloud-check v-else-if="state === 'synced'" class="size-3.5" />
         <icon-lucide-loader-circle
           v-else-if="state === 'uploading'"
@@ -98,7 +98,7 @@ const summary = computed(() => {
         <icon-lucide-cloud-upload v-else-if="state === 'pending'" class="size-3.5" />
         <icon-lucide-git-compare-arrows v-else-if="state === 'conflict'" class="size-3.5" />
         <icon-lucide-circle-alert v-else class="size-3.5" />
-        <span v-if="viewOnly || state === 'conflict'" :class="ui.triggerLabel()">
+        <span v-if="!showsNotLive && (viewOnly || state === 'conflict')" :class="ui.triggerLabel()">
           {{ viewOnly ? t.viewOnly : t.statusResolve }}
         </span>
       </PopoverTrigger>
@@ -107,8 +107,8 @@ const summary = computed(() => {
       <PopoverContent side="bottom" align="start" :side-offset="6" :class="popover.content">
         <div :class="ui.header()">
           <span :class="ui.headerIcon()" :data-state-sync="syncAttribute">
-            <icon-lucide-eye v-if="viewOnly" class="size-4" />
-            <icon-lucide-unplug v-else-if="showsNotLive" class="size-4" />
+            <icon-lucide-unplug v-if="showsNotLive" class="size-4" />
+            <icon-lucide-eye v-else-if="viewOnly" class="size-4" />
             <icon-lucide-git-compare-arrows v-else-if="state === 'conflict'" class="size-4" />
             <icon-lucide-circle-alert v-else-if="state === 'error'" class="size-4" />
             <icon-lucide-cloud-off v-else-if="state === 'offline'" class="size-4" />

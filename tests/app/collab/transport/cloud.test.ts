@@ -41,6 +41,11 @@ class FakeSocket extends EventTarget {
     }
   }
 
+  /** Delivers bytes as one socket message, whatever they hold. */
+  receiveMessage(data: Uint8Array) {
+    this.dispatchEvent(new MessageEvent('message', { data: data.slice().buffer }))
+  }
+
   close(code = 1000, reason = '') {
     this.readyState = WebSocket.CLOSED
     this.dispatchEvent(new CloseEvent('close', { code, reason }))
@@ -168,6 +173,24 @@ describe('Cloud relay transport', () => {
     })
     socket.receive({ type: 'message', namespace: 'yjs-update', from: 'alice', payload })
     expect(received).toEqual([payload])
+  })
+
+  test('connects again after a frame it cannot read, to sync what it missed', async () => {
+    const { sockets, errors } = room()
+    await settle()
+    const socket = sockets[0]
+    if (!socket) throw new Error('Expected a socket')
+    socket.open()
+    socket.receive({ type: 'welcome', peerId: 'me', peers: ['server'] })
+    // A fragment that says more follows, then a whole frame in the middle of it.
+    socket.receiveMessage(new Uint8Array([4, 1, 1, 0]))
+    socket.receive({ type: 'join', peerId: 'alice' })
+    expect(errors).toHaveLength(1)
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0)
+    })
+    await settle()
+    expect(sockets).toHaveLength(2)
   })
 
   test('reconnects with a fresh ticket after losing the relay, saying its peers left', async () => {

@@ -238,10 +238,22 @@ const liveRooms = new Map<EditorStore, { room: LiveRoom; stopWatching: () => voi
 /** The server and account each tab joined its room as, so a change of account joins again. */
 const joinedAs = new WeakMap<EditorStore, { serverId: string; accountId: string | null }>()
 
+/** Each refused tab's watch for its closing, which forgets the refusal with the tab. */
+const refusalWatches = new Map<EditorStore, () => void>()
+
 function setRefused(store: EditorStore, refused: boolean) {
+  refusalWatches.get(store)?.()
+  refusalWatches.delete(store)
   const next = new Set(cloudRoomsRefused.value)
-  if (refused) next.add(store)
-  else next.delete(store)
+  if (refused) {
+    next.add(store)
+    refusalWatches.set(
+      store,
+      watch(allTabs, () => {
+        if (!getTabForStore(store)) setRefused(store, false)
+      })
+    )
+  } else next.delete(store)
   cloudRoomsRefused.value = next
 }
 
@@ -256,15 +268,7 @@ export function leaveRefusedRoom(
   room: { permission: 'edit' | 'view'; canSave: boolean }
 ): void {
   setRefused(store, true)
-  const stopForgetting = watch(allTabs, () => {
-    if (getTabForStore(store)) return
-    setRefused(store, false)
-    stopForgetting()
-  })
-  liveRooms.get(store)?.stop()
-  liveRooms.delete(store)
-  const session = roomForStore(store)
-  if (session) leaveRoom(session)
+  leaveCloudRoom(store)
   if (room.permission === 'view') {
     store.setReadOnly(true)
     return
@@ -275,7 +279,7 @@ export function leaveRefusedRoom(
 }
 
 /** Joins a refused tab's room again, showing the document as the server holds it. */
-export async function rejoinCloudRoom(store: EditorStore): Promise<void> {
+export async function rejoinRefusedRoom(store: EditorStore): Promise<void> {
   setRefused(store, false)
   await restartCloudRoom(store)
 }

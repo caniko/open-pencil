@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { cloudRoomsRefused, leaveRefusedRoom } from '@/app/cloud/rooms/live'
+import { cloudRoomsRefused, leaveRefusedRoom, rejoinRefusedRoom } from '@/app/cloud/rooms/live'
 import type { EditorStore } from '@/app/editor/session'
 
 import { asDouble } from '#tests/helpers/doubles'
@@ -32,6 +32,7 @@ describe('a tab the relay refused', () => {
   test('keeps a viewer read-only, and a guest without an account unsaved', () => {
     const viewer = tab()
     leaveRefusedRoom(viewer.store, { permission: 'view', canSave: false })
+    expect(cloudRoomsRefused.value.has(viewer.store)).toBe(true)
     expect(viewer.calls.readOnly.at(-1)).toBe(true)
     expect(viewer.calls.saves).toBe(0)
 
@@ -39,5 +40,14 @@ describe('a tab the relay refused', () => {
     leaveRefusedRoom(guest.store, { permission: 'edit', canSave: false })
     expect(guest.calls.saves).toBe(0)
     expect(guest.store.state.autosaveEnabled).toBe(false)
+  })
+
+  test('forgets the refusal on rejoining, and a second refusal records it once', async () => {
+    const { store } = tab({ stored: false })
+    leaveRefusedRoom(store, { permission: 'edit', canSave: true })
+    leaveRefusedRoom(store, { permission: 'edit', canSave: true })
+    expect([...cloudRoomsRefused.value].filter((refused) => refused === store)).toHaveLength(1)
+    await rejoinRefusedRoom(store)
+    expect(cloudRoomsRefused.value.has(store)).toBe(false)
   })
 })

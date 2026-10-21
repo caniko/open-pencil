@@ -3,6 +3,7 @@ import {
   decodeRelayServerFrame,
   MAX_COLLAB_MESSAGE_BYTES,
   RELAY_CLOSE,
+  RELAY_FORWARDING_BYTES,
   relayClientMessages,
   type RelayClientFrame
 } from '@open-pencil/cloud/contract'
@@ -196,13 +197,18 @@ function joinCloudRelayRoom(roomId: string, options: CloudRelayOptions): CollabR
       send({ type: 'auth', token: issued.token })
       scheduleRefresh(issued)
     })
-    const assembler = createRelayServerAssembler(() => MAX_COLLAB_MESSAGE_BYTES)
+    const assembler = createRelayServerAssembler(
+      () => MAX_COLLAB_MESSAGE_BYTES + RELAY_FORWARDING_BYTES
+    )
     next.addEventListener('message', (event: MessageEvent<ArrayBuffer>) => {
       if (socket !== next) return
       const assembled = assembler.push(new Uint8Array(event.data))
       if (assembled.type === 'frame') handleFrame(assembled.data)
       else if (assembled.type !== 'partial') {
+        // A frame this peer could not read leaves it behind the room, so it connects again and
+        // syncs what it missed.
         report('The collaboration relay sent a frame this peer cannot read:', assembled.type)
+        next.close(1000, 'Unreadable collaboration frame')
       }
     })
     next.addEventListener('close', (event) => {

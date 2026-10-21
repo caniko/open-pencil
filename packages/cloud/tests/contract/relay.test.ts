@@ -105,4 +105,18 @@ describe('relay frames', () => {
     // The assembler starts over after refusing.
     expect(assembler.push(encodeRelayClientFrame(small)).type).toBe('frame')
   })
+
+  test('discard the rest of a refused frame instead of reading its tail as a frame', () => {
+    const assembler = createRelayClientAssembler(() => RELAY_FRAGMENT_BYTES)
+    const messages = relayClientMessages({
+      type: 'message',
+      namespace: 'yjs-update',
+      target: null,
+      payload: new Uint8Array(RELAY_FRAGMENT_BYTES * 4)
+    })
+    const results = messages.map((message) => assembler.push(message).type)
+    expect(results).toEqual(['partial', 'too-large', 'partial', 'partial', 'partial'])
+    const small: RelayClientFrame = { type: 'auth', token: 'ticket' }
+    expect(assembler.push(encodeRelayClientFrame(small)).type).toBe('frame')
+  })
 })

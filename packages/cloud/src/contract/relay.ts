@@ -115,6 +115,13 @@ export const RELAY_FRAGMENT_BYTES = 256 * 1024
 /** The smallest per-message limit a relay may set: one fragment and its few bytes of framing. */
 export const RELAY_MINIMUM_MESSAGE_BYTES = RELAY_FRAGMENT_BYTES + 16
 
+/**
+ * What the relay adds to a frame it forwards: the frame type, the sender's peer ID, and lengths.
+ * A client reads frames this much past the relay's own limit, so a forwarded edit at that limit
+ * still arrives.
+ */
+export const RELAY_FORWARDING_BYTES = 64 * 1024
+
 /** Frames a client sends: its ticket first, again to refresh it, then room messages. */
 export type RelayClientFrame =
   | { type: 'auth'; token: string }
@@ -211,6 +218,8 @@ export type RelayAssembly =
 function createAssembler(tag: number, limit: () => number) {
   let parts: Uint8Array[] = []
   let size = 0
+  /** Set while the rest of a refused frame arrives, so its tail never reads as a frame of its own. */
+  let discarding = false
   const reset = () => {
     parts = []
     size = 0
@@ -244,11 +253,17 @@ function createAssembler(tag: number, limit: () => number) {
       }
       if (decoder.pos !== data.byteLength || more > 1) {
         reset()
+        discarding = more === 1
         return { type: 'malformed' }
+      }
+      if (discarding) {
+        discarding = more === 1
+        return { type: 'partial' }
       }
       size += chunk.byteLength
       if (size > limit()) {
         reset()
+        discarding = more === 1
         return { type: 'too-large' }
       }
       parts.push(chunk.slice())
