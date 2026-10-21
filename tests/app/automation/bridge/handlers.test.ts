@@ -373,7 +373,7 @@ describe('close_file and save_file never prompt', () => {
 
 describe('file paths in a browser go through the MCP server', () => {
   const files = {
-    url: (path: string) => new URL(`http://mcp.test/files${path}`),
+    url: (path: string) => new URL(`http://mcp.test/files${encodeURI(path)}`),
     headers: { authorization: 'Bearer token' }
   }
   const { handleRequest: handleThroughServer } = createAutomationCommandHandlers(
@@ -415,12 +415,12 @@ describe('file paths in a browser go through the MCP server', () => {
   test('opening a path fetches it from the server with the token', async () => {
     const bytes = new Uint8Array(await Bun.file(testPath('fixtures', 'slots.fig')).arrayBuffer())
     const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(bytes))
-    await settle(requestThroughServer('open_file', { path: '/root/slots.fig' }))
+    await settle(requestThroughServer('open_file', { path: '/root/my slots.fig' }))
 
     const [url, init] = fetch.mock.calls[0]
-    expect(String(url)).toBe('http://mcp.test/files/root/slots.fig')
+    expect(String(url)).toBe('http://mcp.test/files/root/my%20slots.fig')
     expect(new Headers(init?.headers).get('authorization')).toBe('Bearer token')
-    expect(getActiveStore().state.documentName).toBe('slots')
+    expect(getActiveStore().state.documentName).toBe('my slots')
   })
 })
 

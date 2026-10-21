@@ -1,4 +1,5 @@
-import { lstat, mkdir, readFile, readlink, realpath, stat, writeFile } from 'node:fs/promises'
+import { constants } from 'node:fs'
+import { lstat, mkdir, open, readlink, realpath, writeFile } from 'node:fs/promises'
 import { dirname, basename, isAbsolute, join, parse, resolve, sep as osSep } from 'node:path'
 
 import { compact } from 'es-toolkit/array'
@@ -270,11 +271,22 @@ export async function readInsideRoot(
   root: string
 ): Promise<Uint8Array<ArrayBuffer>> {
   const { realPath } = await resolveSafePath(filePath, root)
-  const { size } = await stat(realPath)
-  if (size > MAX_FILE_TRANSFER_BYTES) {
-    throw new Error(`"${basename(realPath)}" is larger than ${MAX_FILE_TRANSFER_BYTES} bytes`)
+  // One descriptor for the checks and the read, so the file cannot be swapped between them; a
+  // symlink in its place is refused, and a folder swapped above it is caught by the re-check.
+  const handle = await open(realPath, constants.O_RDONLY | constants.O_NOFOLLOW)
+  try {
+    const stats = await handle.stat()
+    if (!stats.isFile()) throw new Error(`"${basename(realPath)}" is not a file`)
+    if (stats.size > MAX_FILE_TRANSFER_BYTES) {
+      throw new Error(`"${basename(realPath)}" is larger than ${MAX_FILE_TRANSFER_BYTES} bytes`)
+    }
+    await resolveSafePath(realPath, root)
+    const bytes = new Uint8Array(stats.size)
+    const { bytesRead } = await handle.read(bytes, 0, stats.size, 0)
+    return bytes.slice(0, bytesRead)
+  } finally {
+    await handle.close()
   }
-  return new Uint8Array(await readFile(realPath))
 }
 
 export async function writeToolOutput(
